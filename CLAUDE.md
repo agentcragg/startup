@@ -31,6 +31,8 @@ used exclusively on his phone, added to home screen.
    the user works there; he hated it. Current palette: dark neutral
    (#141414 bg), one green accent (#4ade80), red (#f87171) for drink/finale.
 7. **Past days editable via the calendar grid; future days locked.**
+   Tapping a past cell (Progress view) jumps to the Today view with that
+   day loaded in the editor; a "Back to today" button returns.
 8. **Storage is dual-mode:** window.storage (Claude artifact) if present,
    else localStorage. Key: `slopaoke-campaign-v2`. Single JSON blob.
 
@@ -57,6 +59,18 @@ used exclusively on his phone, added to home screen.
   bronze 60% / silver 75% / gold 90%.
 - Log streak = consecutive days with `l` (food logged); an unlogged *today*
   doesn't break it.
+- `paceStatus` = the front-page read: `hit` (week target cleared),
+  `ontrack`, or `behind`. Straight-line pace over the week's in-campaign
+  days, counting earned + pending; the current day doesn't count against
+  pace until it's over (same stance as the streak).
+
+## App structure (post backlog item 1)
+
+Two views with a fixed bottom tab bar:
+- **Today** (default): status word + week bar (the half-second read), then
+  the day editor. That's all.
+- **Progress**: week detail in digits, checkpoint bar, stats row, calendar,
+  rules card.
 
 ## Context the app doesn't show but the plan assumes
 
@@ -79,10 +93,9 @@ keeps working.
 
 ## Backlog (agreed critique, in priority order)
 
-1. **Restructure hierarchy.** Front page = today's taps + ONE glanceable
-   status (a half-second "you're fine / you're slipping" read, not digits).
-   Calendar, checkpoint detail, stats, rules move to a second view/tab or
-   behind progressive disclosure.
+1. ~~**Restructure hierarchy.**~~ DONE — Today/Progress split, see "App
+   structure" above. Open question for the user: "Behind pace" renders in
+   red; flip to neutral grey if it reads as punishment.
 2. **More visual, fewer numbers.** The app currently communicates almost
    entirely in tabular digits. User wants it to "say more" visually.
 3. **Kill redundancy.** Weekly target, checkpoint bar, campaign total are

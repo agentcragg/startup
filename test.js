@@ -89,6 +89,17 @@ eq('core 1', L.corePts({l:1,p:0}), 1);
   const p = L.weekPlan(S({}), D(10,26)); // last week, nothing earned all campaign
   eq('target capped at 20', p.target, 20);
 }
+// paceStatus: the front-page read
+{
+  eq('day one, nothing logged yet: on track', L.paceStatus(S({}), D(8,1)), 'ontrack');
+  eq('mid-week, nothing logged: behind', L.paceStatus(S({}), D(8,5)), 'behind');
+  const sofar = {'2026-08-03':{...full},'2026-08-04':{...full}};
+  eq('perfect so far: on track', L.paceStatus(S(sofar), D(8,5)), 'ontrack');
+  const wk = {};
+  for(let d=3; d<=9; d++) wk['2026-08-0'+d] = {...full};
+  eq('target cleared: hit', L.paceStatus(S(wk), D(8,9)), 'hit');
+}
+
 // periods
 eq('pmax 14d = 40', L.periodMax(L.PERIODS[0]), 40);
 eq('pmax 17d = 49', L.periodMax(L.PERIODS[1]), 49);

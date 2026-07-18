@@ -16,7 +16,8 @@
     background:var(--bg); color:var(--text);
     font-family:system-ui,-apple-system,sans-serif;
     font-size:15px; line-height:1.4;
-    max-width:520px; margin:0 auto; padding:20px 16px 56px;
+    max-width:520px; margin:0 auto;
+    padding:20px 16px calc(76px + env(safe-area-inset-bottom));
   }
   h1{font-size:19px; font-weight:600; margin-bottom:2px}
   .sub{color:var(--muted); font-size:13px; margin-bottom:16px}
@@ -28,15 +29,31 @@
     background:var(--card); border:1px solid var(--line); border-radius:10px;
     padding:14px; margin-bottom:12px;
   }
-  /* hero: weekly target */
-  .hero .big{font-size:44px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums}
-  .hero .big.done{color:var(--done)}
-  .hero .lbl{font-size:13px; color:var(--muted); margin:4px 0 12px}
+  /* status: the one glanceable read */
+  .status-word{font-size:30px; font-weight:700; line-height:1.1; margin-bottom:12px}
+  .status-word.good{color:var(--done)}
+  .status-word.bad{color:var(--drink)}
   .wbar{position:relative; height:12px; background:#2a2a2a; border-radius:6px; overflow:hidden; margin-bottom:8px}
   .wbar .earn{position:absolute; top:0; left:0; bottom:0; background:var(--done)}
   .wbar .pend{position:absolute; top:0; bottom:0; background:var(--done-dim)}
-  .hero .detail{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums}
-  .hero .detail b{color:var(--text); font-weight:600}
+  .detail{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .detail b{color:var(--text); font-weight:600}
+  /* bottom tabs */
+  .tabs{
+    position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto;
+    display:flex; background:var(--card); border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom); z-index:2;
+  }
+  .tabs button{
+    flex:1; background:none; border:none; color:var(--muted);
+    font:inherit; font-size:14px; padding:15px; cursor:pointer;
+  }
+  .tabs button.on{color:var(--done); font-weight:600}
+  .back{
+    width:100%; margin-top:10px; padding:10px; background:none;
+    border:1px solid var(--line); border-radius:8px; color:var(--text);
+    font:inherit; font-size:13px; cursor:pointer;
+  }
   /* checkpoint */
   .cp-head{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:14px}
   .bar-wrap{position:relative; height:10px; margin-bottom:24px}
@@ -111,11 +128,33 @@
 
   <div id="banner"></div>
 
-  <div class="card hero">
-    <div class="big" id="heroNum">0</div>
-    <div class="lbl" id="heroLbl">points needed this week</div>
+  <main id="viewToday">
+  <div class="card">
+    <div class="status-word" id="statusWord">—</div>
     <div class="wbar"><div class="earn" id="wbarEarn"></div><div class="pend" id="wbarPend"></div></div>
-    <div class="detail" id="heroDetail"></div>
+    <div class="detail" id="statusLine"></div>
+  </div>
+
+  <div class="card" id="dayCard">
+    <div class="day-head">
+      <h2 id="dayTitle">—</h2>
+      <div class="day-pts" id="dayPts">0 pts</div>
+    </div>
+    <div id="checksWrap"></div>
+    <div class="pills">
+      <button class="pill gym" id="gymPill">Gym session</button>
+      <button class="pill warn" id="drinkPill">Big drink day</button>
+      <button class="pill warn" id="takeawayPill">Takeaway: <span id="twN">0</span></button>
+    </div>
+    <p class="hint" id="dayHint"></p>
+    <button class="back" id="backToday" hidden>Back to today</button>
+  </div>
+  </main>
+
+  <main id="viewProgress" hidden>
+  <div class="card">
+    <h3>This week</h3>
+    <div class="detail" id="weekDetail"></div>
   </div>
 
   <div class="card">
@@ -148,20 +187,6 @@
     </div>
   </div>
 
-  <div class="card" id="dayCard">
-    <div class="day-head">
-      <h2 id="dayTitle">—</h2>
-      <div class="day-pts" id="dayPts">0 pts</div>
-    </div>
-    <div id="checksWrap"></div>
-    <div class="pills">
-      <button class="pill gym" id="gymPill">Gym session</button>
-      <button class="pill warn" id="drinkPill">Big drink day</button>
-      <button class="pill warn" id="takeawayPill">Takeaway: <span id="twN">0</span></button>
-    </div>
-    <p class="hint" id="dayHint"></p>
-  </div>
-
   <div class="card">
     <h3>Calendar</h3>
     <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
@@ -185,6 +210,12 @@
       Checkpoints every fortnight: bronze 60% · silver 75% · gold 90%.
     </p>
   </div>
+  </main>
+
+  <nav class="tabs">
+    <button id="tabToday" class="on">Today</button>
+    <button id="tabProgress">Progress</button>
+  </nav>
 
 <script>
 const Logic = (function(){
@@ -277,6 +308,20 @@ const Logic = (function(){
             need: Math.max(0, target - earned - w.pending)};
   }
 
+  // Half-second front-page read: 'hit' | 'ontrack' | 'behind'.
+  // Straight-line pace over the week's in-campaign days; the current day
+  // doesn't count against pace until it's over (same stance as the streak).
+  function paceStatus(state, todayDate){
+    const plan = weekPlan(state, todayDate);
+    if(plan.need === 0) return 'hit';
+    const t = clamp(todayDate);
+    const mon = mondayOf(t), wend = addDays(mon,6);
+    const first = mon < START ? new Date(START) : mon;
+    const last = wend > END ? new Date(END) : wend;
+    const expected = plan.target * (dayCount(first,t)-1) / dayCount(first,last);
+    return (plan.earned + plan.pending >= expected) ? 'ontrack' : 'behind';
+  }
+
   function periodFor(date){
     const t = clamp(date);
     return PERIODS.find(p => t>=p[1] && t<=p[2]) || PERIODS[0];
@@ -284,7 +329,7 @@ const Logic = (function(){
   function periodMax(p){ return Math.round(40 * dayCount(p[1],p[2]) / 14); }
 
   return {START, END, WIN, PERIODS, iso, addDays, dayCount, mondayOf, clamp, getDay,
-          corePts, weekAgg, rangePts, gymTotal, streak, weekPlan, periodFor, periodMax};
+          corePts, weekAgg, rangePts, gymTotal, streak, weekPlan, paceStatus, periodFor, periodMax};
 })();
 if (typeof module !== 'undefined') module.exports = Logic;
 
@@ -301,6 +346,15 @@ if (typeof document !== 'undefined') (function(){
 
   function upd(k, fn){ const r = L.getDay(state,k); fn(r); state.days[k]=r; save(); render(); }
 
+  function showView(v){
+    document.getElementById('viewToday').hidden = v!=='today';
+    document.getElementById('viewProgress').hidden = v!=='progress';
+    document.getElementById('tabToday').className = v==='today' ? 'on' : '';
+    document.getElementById('tabProgress').className = v==='progress' ? 'on' : '';
+  }
+  document.getElementById('tabToday').onclick = ()=> showView('today');
+  document.getElementById('tabProgress').onclick = ()=> showView('progress');
+
   function render(){
     const t = today(), k = L.iso(selected), rec = L.getDay(state,k);
 
@@ -313,21 +367,29 @@ if (typeof document !== 'undefined') (function(){
       banner.innerHTML = '<div class="banner">Campaign finished.</div>';
     } else banner.innerHTML = '';
 
-    // hero: weekly pace
+    // status: the one glanceable read
     const plan = L.weekPlan(state, t);
-    const heroNum = document.getElementById('heroNum');
-    heroNum.textContent = plan.need;
-    heroNum.className = 'big' + (plan.need===0 ? ' done' : '');
-    document.getElementById('heroLbl').textContent =
-      plan.need===0 ? 'week target hit' : 'points needed this week';
+    const word = document.getElementById('statusWord');
+    if(t < L.START){ word.textContent = 'Not started'; word.className = 'status-word'; }
+    else if(t > L.END){ word.textContent = 'Finished'; word.className = 'status-word'; }
+    else {
+      const ps = L.paceStatus(state, t);
+      word.textContent = ps==='hit' ? 'Week target hit' : ps==='ontrack' ? 'On track' : 'Behind pace';
+      word.className = 'status-word ' + (ps==='behind' ? 'bad' : 'good');
+    }
     const pct = v => Math.min(100, plan.target>0 ? v/plan.target*100 : 100);
     document.getElementById('wbarEarn').style.width = pct(plan.earned)+'%';
     const pendEl = document.getElementById('wbarPend');
     pendEl.style.left = pct(plan.earned)+'%';
     pendEl.style.width = Math.max(0, pct(plan.earned+plan.pending)-pct(plan.earned))+'%';
-    document.getElementById('heroDetail').innerHTML =
+    document.getElementById('statusLine').textContent =
+      plan.earned+' of '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' bonus pending' : '');
+
+    // progress view: week detail in digits
+    document.getElementById('weekDetail').innerHTML =
       '<b>'+plan.earned+'</b> earned'+(plan.pending?' · <b>+'+plan.pending+'</b> bonus pending':'')+
-      ' · target <b>'+plan.target+'</b> · '+plan.weeksLeft+' week'+(plan.weeksLeft===1?'':'s')+' left';
+      ' · need <b>'+plan.need+'</b> more · target <b>'+plan.target+'</b> · '+
+      plan.weeksLeft+' week'+(plan.weeksLeft===1?'':'s')+' left';
 
     // checkpoint
     const P = L.periodFor(t), pmax = L.periodMax(P);
@@ -387,6 +449,9 @@ if (typeof document !== 'undefined') (function(){
     const w = L.weekAgg(state, selected, t);
     document.getElementById('dayHint').textContent =
       'Week so far: '+w.drinks+'/2 big drink days · '+w.tw+'/1 takeaway'+(w.tw===1?'':'s')+' · '+w.gym+'/2 gym.';
+    const back = document.getElementById('backToday');
+    back.hidden = L.iso(L.clamp(t))===k;
+    back.onclick = ()=>{ selected = L.clamp(today()); render(); };
 
     // grid
     const grid = document.getElementById('grid');
@@ -405,7 +470,7 @@ if (typeof document !== 'undefined') (function(){
       if(d > t) cell.disabled = true;
       else {
         const dd = new Date(d);
-        cell.onclick = ()=>{ selected = dd; render(); };
+        cell.onclick = ()=>{ selected = dd; showView('today'); render(); };
       }
       grid.appendChild(cell);
     }
