@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#141414">
+<meta name="theme-color" content="#101010">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Slopaoke">
@@ -13,180 +13,228 @@
 <title>Slopaoke campaign</title>
 <style>
   :root{
-    --bg:#141414; --card:#1d1d1d; --line:#333;
-    --text:#ececec; --muted:#8f8f8f;
-    --done:#4ade80; --done-dim:rgba(74,222,128,.35);
-    --drink:#f87171; --mark:#c9c9c9;
+    --bg:#101010; --panel:#181818; --line:#2e2c28; --well:#101010;
+    --ink:#e8e2d4; --ink-dim:#8a857a; --ink-faint:#55524a;
+    --led:#4ade80; --led-glow:rgba(74,222,128,.75);
+    --red:#e0483e; --red-glow:rgba(224,72,62,.7);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
-    background:var(--bg); color:var(--text);
-    font-family:system-ui,-apple-system,sans-serif;
+    background:var(--bg); color:var(--ink);
+    font-family:"Helvetica Neue",-apple-system,system-ui,Arial,sans-serif;
     font-size:15px; line-height:1.4;
     max-width:520px; margin:0 auto;
-    padding:20px 16px calc(76px + env(safe-area-inset-bottom));
+    padding:22px 16px calc(84px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
   }
-  h1{font-size:19px; font-weight:600; margin-bottom:2px}
-  .sub{color:var(--muted); font-size:13px; margin-bottom:16px}
-  .banner{
-    background:var(--card); border:1px solid var(--line); border-radius:10px;
-    padding:12px 14px; margin-bottom:12px; font-size:14px; color:var(--muted);
+  .caps{letter-spacing:.14em; text-transform:uppercase}
+  .serif{font-family:Georgia,"Times New Roman",serif; font-style:italic; text-transform:none; letter-spacing:0}
+
+  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px}
+  header .brand{font-size:14px; font-weight:700}
+  header .dates{font-size:14px; color:var(--ink-dim)}
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:16px; margin-bottom:14px;
   }
-  .card{
-    background:var(--card); border:1px solid var(--line); border-radius:10px;
-    padding:14px; margin-bottom:12px;
+  .panel .rule{height:1px; background:var(--line); margin:14px -16px}
+  .p-head{font-size:12px; font-weight:700; margin-bottom:12px}
+  .banner{font-size:13px; color:var(--ink-dim); letter-spacing:.04em}
+
+  /* meter */
+  .meter{display:block; width:100%}
+  #needleG,#ghostG{transform-box:view-box; transform-origin:150px 150px;
+    transition:transform .9s cubic-bezier(.3,1.6,.4,1)}
+  .lamp-row{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .lamp{display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; white-space:nowrap}
+  .lamp .dot{width:8px; height:8px; border-radius:50%; background:#33312c; flex:none}
+  .lamp.good .dot{background:var(--led); box-shadow:0 0 6px var(--led-glow)}
+  .lamp.bad .dot{background:var(--red); box-shadow:0 0 6px var(--red-glow)}
+  .readout{font-size:11.5px; color:var(--ink-dim); font-variant-numeric:tabular-nums; letter-spacing:.08em; text-align:right}
+  .readout b{color:var(--ink); font-weight:700}
+
+  /* day panel */
+  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px}
+  .day-head .t{font-size:12px; font-weight:700}
+  .day-head .d{font-size:15px; color:var(--ink-dim)}
+  .check{
+    display:flex; align-items:center; gap:12px; width:100%;
+    background:var(--well); border:1px solid var(--line); border-radius:5px;
+    padding:14px; margin-bottom:10px; color:var(--ink-dim);
+    font:inherit; cursor:pointer; text-align:left;
   }
-  /* status: the one glanceable read */
-  .status-word{font-size:30px; font-weight:700; line-height:1.1; margin-bottom:12px}
-  .status-word.good{color:var(--done)}
-  .status-word.bad{color:var(--drink)}
-  .wbar{position:relative; height:12px; background:#2a2a2a; border-radius:6px; overflow:hidden; margin-bottom:8px}
-  .wbar .earn{position:absolute; top:0; left:0; bottom:0; background:var(--done)}
-  .wbar .pend{position:absolute; top:0; bottom:0; background:var(--done-dim)}
-  .detail{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums}
-  .detail b{color:var(--text); font-weight:600}
-  /* bottom tabs */
+  .check .led{width:6px; height:6px; border-radius:50%; background:#33312c; flex:none}
+  .check .lbl{font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase}
+  .check:active{transform:translateY(1px)}
+  .check.on{color:var(--ink); border-color:#4c4a44; background:#1d1c19}
+  .check.on .led{background:var(--led); box-shadow:0 0 6px var(--led-glow)}
+  .btn-row{display:flex; gap:10px; margin-top:14px}
+  .hw-btn{
+    flex:1; border:1px solid var(--line); border-radius:5px; background:var(--well);
+    color:var(--ink-dim); font:inherit; font-size:10px; font-weight:600;
+    padding:11px 2px 10px; text-align:center; letter-spacing:.08em; text-transform:uppercase;
+    white-space:nowrap; cursor:pointer;
+  }
+  .hw-btn:active{transform:translateY(1px)}
+  .hw-btn .led{display:block; width:5px; height:5px; border-radius:50%; background:#33312c; margin:0 auto 7px}
+  .hw-btn.on-g{color:var(--ink); border-color:#4c4a44}
+  .hw-btn.on-g .led{background:var(--led); box-shadow:0 0 5px var(--led-glow)}
+  .hw-btn.on-r{color:var(--ink); border-color:#4c4a44}
+  .hw-btn.on-r .led{background:var(--red); box-shadow:0 0 5px var(--red-glow)}
+  .hint{font-size:11.5px; color:var(--ink-dim); margin-top:13px; letter-spacing:.02em}
+  .back{
+    width:100%; margin-top:12px; padding:11px; background:none;
+    border:1px solid var(--line); border-radius:5px; color:var(--ink);
+    font:inherit; font-size:11px; font-weight:600; cursor:pointer;
+  }
+
+  /* rescue */
+  .rescue{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    color:var(--ink); font:inherit; font-size:12px; font-weight:700;
+    padding:15px; margin-bottom:14px; cursor:pointer;
+  }
+  .rescue .rec{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 6px var(--red-glow)}
+
+  /* progress: week detail */
+  .detail{font-size:12.5px; color:var(--ink-dim); font-variant-numeric:tabular-nums; letter-spacing:.03em}
+  .detail b{color:var(--ink); font-weight:700}
+
+  /* checkpoint */
+  .cp-head{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:700; margin-bottom:16px}
+  .cp-head .serif{font-weight:400; font-size:14px; color:var(--ink-dim)}
+  .bar-wrap{position:relative; height:8px; margin-bottom:40px}
+  .bar-track{position:absolute; inset:0; background:var(--well); border:1px solid var(--line); border-radius:4px}
+  .bar-fill{position:absolute; top:1px; left:1px; bottom:1px; background:var(--ink); border-radius:3px; min-width:2px}
+  .mark{position:absolute; top:-4px; width:1.5px; height:16px; background:var(--ink-faint)}
+  .mark.hit{background:var(--led); box-shadow:0 0 4px var(--led-glow)}
+  .mark span{position:absolute; top:19px; left:50%; transform:translateX(-50%);
+    font-size:9px; color:var(--ink-dim); white-space:nowrap; letter-spacing:.1em; text-transform:uppercase}
+  .mark.hit span{color:var(--led)}
+  .cp-status{font-size:12px; color:var(--ink-dim); margin-top:16px; font-variant-numeric:tabular-nums; letter-spacing:.06em}
+
+  /* stat row */
+  .stats{display:flex; gap:10px; margin-bottom:14px}
+  .stat{flex:1; background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:11px 8px; text-align:center}
+  .stat .num{font-size:18px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .num small{font-size:10px; color:var(--ink-dim); font-weight:400}
+  .stat .lbl{font-size:9px; color:var(--ink-dim); margin-top:4px; letter-spacing:.12em; text-transform:uppercase}
+  .stat .mini{height:3px; background:var(--well); border-radius:2px; margin-top:8px; overflow:hidden}
+  .stat .mini div{height:100%; background:var(--ink); border-radius:2px}
+
+  /* photos */
+  .shots{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px}
+  .shot{flex:none; width:86px; background:none; border:none; padding:0; color:var(--ink-dim); font:inherit; cursor:pointer}
+  .shot img{width:86px; height:114px; object-fit:cover; border-radius:5px; border:1px solid var(--line); display:block}
+  .shot .cap{font-size:9px; margin-top:6px; text-align:center; letter-spacing:.12em; text-transform:uppercase}
+  .shot .ph{width:86px; height:114px; border:1px dashed #3a3833; border-radius:5px;
+    display:grid; place-items:center; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim)}
+
+  /* grid */
+  .dow,.grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+  .dow{margin-bottom:6px}
+  .dow span{font-size:9px; text-align:center; color:var(--ink-dim); letter-spacing:.1em}
+  .cell{
+    aspect-ratio:1; border-radius:3px; border:1px solid #262420;
+    background:var(--well); cursor:pointer; position:relative; padding:0;
+  }
+  .cell:disabled{cursor:default; opacity:.3; border-style:dashed}
+  .cell.p1{background:var(--ink-faint); border-color:transparent}
+  .cell.p2{background:var(--ink); border-color:transparent}
+  .cell.gym::after{content:""; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--led)}
+  .cell.drink::before{content:""; position:absolute; top:2px; right:2px; width:4px; height:4px; border-radius:50%; background:var(--red)}
+  .cell.cp{box-shadow:0 0 0 1.5px var(--ink-dim)}
+  .cell.finale{box-shadow:0 0 0 1.5px var(--red)}
+  .cell.sel{outline:2px solid var(--ink); outline-offset:1px}
+  .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; font-size:9.5px; color:var(--ink-dim); letter-spacing:.08em; text-transform:uppercase}
+  .legend span{display:flex; align-items:center; gap:5px}
+  .sw{width:10px; height:10px; border-radius:3px; position:relative}
+  .rules{font-size:12px; color:var(--ink-dim); line-height:1.8; letter-spacing:.02em}
+
+  /* overlays */
+  .overlay{position:fixed; inset:0; background:#000; z-index:10; display:flex; flex-direction:column}
+  .overlay[hidden]{display:none}
+  .overlay video,.overlay img{flex:1; min-height:0; width:100%; object-fit:contain; background:#000}
+  .overlay-bar{display:flex; background:#000; border-top:1px solid var(--line)}
+  .overlay-bar button{
+    flex:1; padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom));
+    background:none; border:none; color:var(--ink); font:inherit; font-size:11px; font-weight:700; cursor:pointer;
+  }
+  .overlay-bar button.danger{color:var(--red)}
+  .photo-cap{position:absolute; top:14px; left:16px; font-size:11px; font-weight:700; color:var(--ink);
+    text-shadow:0 1px 4px #000}
+
+  /* tabs */
   .tabs{
     position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto;
-    display:flex; background:var(--card); border-top:1px solid var(--line);
+    display:flex; background:var(--bg); border-top:1px solid var(--line);
     padding-bottom:env(safe-area-inset-bottom); z-index:2;
   }
   .tabs button{
-    flex:1; background:none; border:none; color:var(--muted);
-    font:inherit; font-size:14px; padding:15px; cursor:pointer;
+    flex:1; background:none; border:none; color:var(--ink-dim);
+    font:inherit; font-size:11px; font-weight:700; padding:15px 0 12px; cursor:pointer;
+    letter-spacing:.14em; text-transform:uppercase;
   }
-  .tabs button.on{color:var(--done); font-weight:600}
-  .back{
-    width:100%; margin-top:10px; padding:10px; background:none;
-    border:1px solid var(--line); border-radius:8px; color:var(--text);
-    font:inherit; font-size:13px; cursor:pointer;
-  }
-  /* rescue video */
-  .rescue{
-    width:100%; padding:13px; background:var(--card);
-    border:1px solid var(--line); border-radius:10px; color:var(--text);
-    font:inherit; cursor:pointer; margin-bottom:12px;
-  }
-  .overlay{position:fixed; inset:0; background:#000; z-index:10; display:flex; flex-direction:column}
-  .overlay[hidden]{display:none}
-  .overlay video{flex:1; min-height:0; width:100%; object-fit:contain; background:#000}
-  .overlay-close{
-    padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom));
-    background:#000; border:none; border-top:1px solid var(--line);
-    color:var(--text); font:inherit; cursor:pointer;
-  }
-  /* checkpoint */
-  .cp-head{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:14px}
-  .bar-wrap{position:relative; height:10px; margin-bottom:24px}
-  .bar-track{position:absolute; inset:0; background:#2a2a2a; border-radius:5px}
-  .bar-fill{position:absolute; top:0; left:0; bottom:0; background:var(--text); border-radius:5px; min-width:2px}
-  .mark{position:absolute; top:-3px; width:2px; height:16px; background:var(--line)}
-  .mark.hit{background:var(--done)}
-  .mark span{position:absolute; top:18px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--muted); white-space:nowrap}
-  .mark.hit span{color:var(--done)}
-  .cp-status{font-size:13px; color:var(--muted); margin-top:14px; font-variant-numeric:tabular-nums}
-  /* stat row */
-  .stats{display:flex; gap:10px; margin-bottom:12px}
-  .stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center}
-  .stat .num{font-size:19px; font-weight:600; font-variant-numeric:tabular-nums}
-  .stat .num small{font-size:11px; color:var(--muted); font-weight:400}
-  .stat .lbl{font-size:11px; color:var(--muted); margin-top:2px}
-  .stat .mini{height:4px; background:#2a2a2a; border-radius:2px; margin-top:7px; overflow:hidden}
-  .stat .mini div{height:100%; background:var(--done); border-radius:2px}
-  /* day editor */
-  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
-  .day-head h2{font-size:15px; font-weight:600}
-  .day-pts{font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums}
-  .check{
-    display:flex; align-items:center; gap:10px; width:100%;
-    background:none; border:1px solid var(--line); border-radius:8px;
-    padding:12px; margin-bottom:8px; color:var(--text);
-    font:inherit; cursor:pointer; text-align:left;
-  }
-  .check .box{
-    width:20px; height:20px; border-radius:5px; flex:none;
-    border:1.5px solid var(--muted); display:grid; place-items:center;
-    font-size:13px; color:#141414;
-  }
-  .check.on{border-color:var(--done)}
-  .check.on .box{background:var(--done); border-color:var(--done)}
-  .pills{display:flex; gap:8px; margin-top:2px}
-  .pill{
-    flex:1; border:1px solid var(--line); border-radius:8px; padding:10px 6px;
-    background:none; color:var(--text); font:inherit; font-size:13px; cursor:pointer;
-  }
-  .pill.gym.on{border-color:var(--done); color:var(--done)}
-  .pill.warn.on{border-color:var(--drink); color:var(--drink)}
-  .hint{font-size:12px; color:var(--muted); margin-top:10px}
-  /* grid */
-  .dow,.grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
-  .dow{margin-bottom:4px}
-  .dow span{font-size:10px; text-align:center; color:var(--muted)}
-  .cell{
-    aspect-ratio:1; border-radius:4px; border:1px solid var(--line);
-    background:none; cursor:pointer; position:relative; padding:0;
-  }
-  .cell:disabled{cursor:default; opacity:.3; border-style:dashed}
-  .cell.p1{background:#7c7c7c; border-color:transparent}
-  .cell.p2{background:var(--done); border-color:transparent}
-  .cell.gym::after{content:""; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--text)}
-  .cell.p2.gym::after{background:#141414}
-  .cell.drink::before{content:""; position:absolute; top:2px; right:2px; width:4px; height:4px; border-radius:50%; background:var(--drink)}
-  .cell.cp{box-shadow:0 0 0 1.5px var(--mark)}
-  .cell.finale{box-shadow:0 0 0 1.5px var(--drink)}
-  .cell.sel{outline:2px solid var(--text); outline-offset:1px}
-  .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; font-size:11px; color:var(--muted)}
-  .legend span{display:flex; align-items:center; gap:4px}
-  .sw{width:10px; height:10px; border-radius:3px; position:relative}
-  .rules{font-size:12.5px; color:var(--muted); line-height:1.7}
-  h3{font-size:14px; font-weight:600; margin-bottom:8px}
-  button:focus-visible,.cell:focus-visible{outline:2px solid var(--text); outline-offset:2px}
+  .tabs button::after{content:""; display:block; width:5px; height:5px; border-radius:50%; background:transparent; margin:5px auto 0}
+  .tabs button.on{color:var(--ink)}
+  .tabs button.on::after{background:var(--led); box-shadow:0 0 5px var(--led-glow)}
+
+  button:focus-visible,.cell:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
 </style>
 </head>
 <body>
-  <h1>Slopaoke campaign</h1>
-  <p class="sub">1 Aug – 31 Oct 2026 · win at 182 points</p>
+  <header>
+    <div class="brand caps">Slopaoke</div>
+    <div class="dates serif">1 Aug – 31 Oct ’26</div>
+  </header>
 
   <div id="banner"></div>
 
   <main id="viewToday">
-  <div class="card">
-    <div class="status-word" id="statusWord">—</div>
-    <div class="wbar"><div class="earn" id="wbarEarn"></div><div class="pend" id="wbarPend"></div></div>
-    <div class="detail" id="statusLine"></div>
+  <div class="panel">
+    <svg class="meter" viewBox="0 0 300 132" aria-hidden="true">
+      <g id="meterTicks"></g>
+      <g id="meterLabels"></g>
+      <g id="targetG"><line x1="150" y1="33" x2="150" y2="47" stroke="#e0483e" stroke-width="2"/></g>
+      <g id="ghostG" opacity=".35"><line x1="150" y1="150" x2="150" y2="44" stroke="#e8e2d4" stroke-width="1.5"/></g>
+      <g id="needleG"><line x1="150" y1="150" x2="150" y2="40" stroke="#e8e2d4" stroke-width="2"/></g>
+      <circle cx="150" cy="150" r="26" fill="#181818" stroke="#2e2c28"/>
+    </svg>
+    <div class="rule"></div>
+    <div class="lamp-row">
+      <div class="lamp caps" id="lamp"><span class="dot"></span><span id="lampLbl">—</span></div>
+      <div class="readout caps" id="readout"></div>
+    </div>
   </div>
 
-  <div class="card" id="dayCard">
+  <div class="panel" id="dayCard">
     <div class="day-head">
-      <h2 id="dayTitle">—</h2>
-      <div class="day-pts" id="dayPts">0 pts</div>
+      <div class="t caps" id="dayTag">Today</div>
+      <div class="d serif" id="dayDate">—</div>
     </div>
     <div id="checksWrap"></div>
-    <div class="pills">
-      <button class="pill gym" id="gymPill">Gym session</button>
-      <button class="pill warn" id="drinkPill">Big drink day</button>
-      <button class="pill warn" id="takeawayPill">Takeaway: <span id="twN">0</span></button>
+    <div class="btn-row">
+      <button class="hw-btn" id="gymPill"><span class="led"></span>Gym</button>
+      <button class="hw-btn" id="drinkPill"><span class="led"></span>Big drink</button>
+      <button class="hw-btn" id="takeawayPill"><span class="led"></span>Takeaway · <span id="twN">0</span></button>
     </div>
     <p class="hint" id="dayHint"></p>
-    <button class="back" id="backToday" hidden>Back to today</button>
+    <button class="back caps" id="backToday" hidden>Back to today</button>
   </div>
 
-  <button class="rescue" id="rescueBtn" hidden>Rescue video</button>
+  <button class="rescue caps" id="rescueBtn" hidden><span class="rec"></span>Rescue video</button>
   </main>
 
-  <div class="overlay" id="videoOverlay" hidden>
-    <video id="rescueVid" playsinline preload="none"></video>
-    <button class="overlay-close" id="videoClose">Close</button>
-  </div>
-
   <main id="viewProgress" hidden>
-  <div class="card">
-    <h3>This week</h3>
+  <div class="panel">
+    <div class="p-head caps">This week</div>
     <div class="detail" id="weekDetail"></div>
   </div>
 
-  <div class="card">
-    <div class="cp-head"><span id="cpName"></span><span id="cpDays"></span></div>
+  <div class="panel">
+    <div class="cp-head"><span class="caps" id="cpName"></span><span class="serif" id="cpDays"></span></div>
     <div class="bar-wrap" id="barWrap">
       <div class="bar-track"></div>
       <div class="bar-fill" id="barFill"></div>
@@ -215,21 +263,27 @@
     </div>
   </div>
 
-  <div class="card">
-    <h3>Calendar</h3>
+  <div class="panel">
+    <div class="p-head caps">Photos</div>
+    <div class="shots" id="shots"></div>
+    <input type="file" id="photoFile" accept="image/*" hidden>
+  </div>
+
+  <div class="panel">
+    <div class="p-head caps">Calendar</div>
     <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
     <div class="grid" id="grid"></div>
     <div class="legend">
-      <span><span class="sw" style="background:#7c7c7c"></span>1 pt</span>
-      <span><span class="sw" style="background:#4ade80"></span>2 pts</span>
-      <span><span class="sw" style="background:#2a2a2a"><span style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#ececec"></span></span>Gym</span>
-      <span><span class="sw" style="background:#2a2a2a"><span style="position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#f87171"></span></span>Big drink</span>
-      <span><span class="sw" style="border:1.5px solid #c9c9c9"></span>Checkpoint</span>
-      <span><span class="sw" style="border:1.5px solid #f87171"></span>31 Oct</span>
+      <span><span class="sw" style="background:#55524a"></span>1 pt</span>
+      <span><span class="sw" style="background:#e8e2d4"></span>2 pts</span>
+      <span><span class="sw" style="background:#101010;border:1px solid #262420"><span style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#4ade80"></span></span>Gym</span>
+      <span><span class="sw" style="background:#101010;border:1px solid #262420"><span style="position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#e0483e"></span></span>Big drink</span>
+      <span><span class="sw" style="border:1.5px solid #8a857a"></span>Checkpoint</span>
+      <span><span class="sw" style="border:1.5px solid #e0483e"></span>31 Oct</span>
     </div>
   </div>
 
-  <div class="card">
+  <div class="panel">
     <p class="rules">
       Daily: logged food +1 · protein 130g +1.<br>
       Report as they happen: big drink days (3+ drinks) and takeaways. No points lost, ever.<br>
@@ -239,6 +293,20 @@
     </p>
   </div>
   </main>
+
+  <div class="overlay" id="videoOverlay" hidden>
+    <video id="rescueVid" playsinline preload="none"></video>
+    <div class="overlay-bar"><button class="caps" id="videoClose">Close</button></div>
+  </div>
+
+  <div class="overlay" id="photoOverlay" hidden>
+    <div class="photo-cap caps" id="photoCap"></div>
+    <img id="photoFull" alt="progress photo">
+    <div class="overlay-bar">
+      <button class="caps danger" id="photoDelete">Delete</button>
+      <button class="caps" id="photoClose">Close</button>
+    </div>
+  </div>
 
   <nav class="tabs">
     <button id="tabToday" class="on">Today</button>
@@ -370,6 +438,8 @@ if (typeof document !== 'undefined') (function(){
 
   function today(){ const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),n.getDate()); }
   function fmt(d){ return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+  function fmtLong(d){ return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}); }
+  function fmtShort(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
   selected = L.clamp(today());
 
   function upd(k, fn){ const r = L.getDay(state,k); fn(r); state.days[k]=r; save(); render(); }
@@ -383,25 +453,33 @@ if (typeof document !== 'undefined') (function(){
   document.getElementById('tabToday').onclick = ()=> showView('today');
   document.getElementById('tabProgress').onclick = ()=> showView('progress');
 
-  // Rescue videos: play inside the app, never link out. Add clips by
-  // dropping an mp4 in videos/ and listing it here; picks at random.
-  // Pages caches files for 10 min — changed clip = new URL (bump ?v).
-  const VIDEOS = ['videos/rescue-01.mp4?v=2'];
-  const overlay = document.getElementById('videoOverlay');
-  const vid = document.getElementById('rescueVid');
-  const rescueBtn = document.getElementById('rescueBtn');
-  rescueBtn.hidden = VIDEOS.length===0;
-  rescueBtn.onclick = ()=>{
-    vid.src = VIDEOS[Math.floor(Math.random()*VIDEOS.length)];
-    overlay.hidden = false;
-    vid.play().catch(()=>{});
-  };
-  function closeVideo(){
-    vid.pause(); vid.removeAttribute('src'); vid.load();
-    overlay.hidden = true;
-  }
-  document.getElementById('videoClose').onclick = closeVideo;
-  vid.onended = closeVideo;
+  // ---- VU meter (scale 0–20, the weekly max; T tick = this week's target) ----
+  const ANG = v => -55 + 110 * Math.min(Math.max(v,0),20) / 20;
+  (function buildMeter(){
+    const ticks = document.getElementById('meterTicks');
+    const labels = document.getElementById('meterLabels');
+    const pt = (r,a)=>{ const rad = a*Math.PI/180; return [150 + r*Math.sin(rad), 150 - r*Math.cos(rad)]; };
+    for(let v=0; v<=20; v++){
+      const a = ANG(v), major = v%5===0;
+      const [x1,y1] = pt(major?106:111, a), [x2,y2] = pt(118, a);
+      const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+      l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+      l.setAttribute('stroke', major ? '#e8e2d4' : '#4c4a44');
+      l.setAttribute('stroke-width', major ? 1.5 : 1);
+      ticks.appendChild(l);
+      if(major){
+        const [lx,ly] = pt(128, a);
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',lx); t.setAttribute('y',ly+3);
+        t.setAttribute('fill','#8a857a'); t.setAttribute('font-size','10');
+        t.setAttribute('text-anchor','middle');
+        t.setAttribute('font-family','Helvetica Neue,Arial,sans-serif');
+        t.textContent = v;
+        labels.appendChild(t);
+      }
+    }
+  })();
 
   function render(){
     const t = today(), k = L.iso(selected), rec = L.getDay(state,k);
@@ -410,28 +488,29 @@ if (typeof document !== 'undefined') (function(){
     const banner = document.getElementById('banner');
     if(t < L.START){
       const n = L.dayCount(t, L.START)-1;
-      banner.innerHTML = '<div class="banner">Starts in '+n+' day'+(n===1?'':'s')+'.</div>';
+      banner.innerHTML = '<div class="panel banner">Starts in '+n+' day'+(n===1?'':'s')+'.</div>';
     } else if(t > L.END){
-      banner.innerHTML = '<div class="banner">Campaign finished.</div>';
+      banner.innerHTML = '<div class="panel banner">Campaign finished.</div>';
     } else banner.innerHTML = '';
 
-    // status: the one glanceable read
+    // meter + lamp
     const plan = L.weekPlan(state, t);
-    const word = document.getElementById('statusWord');
-    if(t < L.START){ word.textContent = 'Not started'; word.className = 'status-word'; }
-    else if(t > L.END){ word.textContent = 'Finished'; word.className = 'status-word'; }
+    document.getElementById('needleG').style.transform = 'rotate('+ANG(plan.earned)+'deg)';
+    const ghost = document.getElementById('ghostG');
+    ghost.style.display = plan.pending ? '' : 'none';
+    ghost.style.transform = 'rotate('+ANG(plan.earned+plan.pending)+'deg)';
+    document.getElementById('targetG').setAttribute('transform','rotate('+ANG(plan.target)+' 150 150)');
+    const lamp = document.getElementById('lamp');
+    const lbl = document.getElementById('lampLbl');
+    if(t < L.START){ lamp.className='lamp caps'; lbl.textContent='Not started'; }
+    else if(t > L.END){ lamp.className='lamp caps'; lbl.textContent='Finished'; }
     else {
       const ps = L.paceStatus(state, t);
-      word.textContent = ps==='hit' ? 'Week target hit' : ps==='ontrack' ? 'On track' : 'Behind pace';
-      word.className = 'status-word ' + (ps==='behind' ? 'bad' : 'good');
+      lamp.className = 'lamp caps ' + (ps==='behind' ? 'bad' : 'good');
+      lbl.textContent = ps==='hit' ? 'Target hit' : ps==='ontrack' ? 'On track' : 'Behind pace';
     }
-    const pct = v => Math.min(100, plan.target>0 ? v/plan.target*100 : 100);
-    document.getElementById('wbarEarn').style.width = pct(plan.earned)+'%';
-    const pendEl = document.getElementById('wbarPend');
-    pendEl.style.left = pct(plan.earned)+'%';
-    pendEl.style.width = Math.max(0, pct(plan.earned+plan.pending)-pct(plan.earned))+'%';
-    document.getElementById('statusLine').textContent =
-      plan.earned+' of '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' bonus pending' : '');
+    document.getElementById('readout').innerHTML =
+      '<b>'+plan.earned+'</b> / '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' pending' : '');
 
     // progress view: week detail in digits
     document.getElementById('weekDetail').innerHTML =
@@ -443,24 +522,25 @@ if (typeof document !== 'undefined') (function(){
     const P = L.periodFor(t), pmax = L.periodMax(P);
     const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
     const ppts = t>=P[1] ? L.rangePts(state, P[1], pEnd, t) : 0;
-    document.getElementById('cpName').textContent = P[0]+' · '+fmt(P[1]).slice(4)+' – '+fmt(P[2]).slice(4);
+    document.getElementById('cpName').textContent = P[0];
+    document.getElementById('cpDays').textContent = fmt(P[1]).slice(4)+' – '+fmt(P[2]).slice(4);
     const left = (t>=P[1] && t<=P[2]) ? L.dayCount(t,P[2])-1 : 0;
-    document.getElementById('cpDays').textContent = (t>=P[1] && t<=P[2]) ? left+' days left' : '';
     const bw = document.getElementById('barWrap');
     bw.querySelectorAll('.mark').forEach(m=>m.remove());
     let next = null;
-    [['Bronze',.6],['Silver',.75],['Gold',.9]].forEach(([name,f])=>{
+    [['Bronze',.6],['Silver',.75],['Gold',.9]].forEach(([name,f],i)=>{
       const th = Math.round(pmax*f);
       if(ppts<th && !next) next = [name,th];
       const m = document.createElement('div');
       m.className = 'mark'+(ppts>=th?' hit':'');
       m.style.left = (f*100)+'%';
-      m.innerHTML = '<span>'+name+' '+th+'</span>';
+      m.innerHTML = '<span'+(i===1?' style="top:31px"':'')+'>'+name+' '+th+'</span>';
       bw.appendChild(m);
     });
     document.getElementById('barFill').style.width = Math.min(100, ppts/pmax*100)+'%';
     document.getElementById('cpStatus').textContent =
-      ppts+' / '+pmax + (next ? ' · '+(next[1]-ppts)+' to '+next[0].toLowerCase() : ' · gold reached');
+      ppts+' / '+pmax + (next ? ' · '+(next[1]-ppts)+' to '+next[0].toLowerCase() : ' · gold reached') +
+      ((t>=P[1] && t<=P[2]) ? ' · '+left+' day'+(left===1?'':'s')+' left' : '');
 
     // stats
     const total = t>=L.START ? L.rangePts(state, L.START, L.clamp(t), t) : 0;
@@ -473,27 +553,27 @@ if (typeof document !== 'undefined') (function(){
     document.getElementById('gymMini').style.width = Math.min(100, gt/26*100)+'%';
 
     // day editor
-    document.getElementById('dayTitle').textContent = (L.iso(t)===k ? 'Today · ' : '') + fmt(selected);
+    document.getElementById('dayTag').textContent = L.iso(t)===k ? 'Today' : 'Editing';
+    document.getElementById('dayDate').textContent = fmtLong(selected);
     const wrap = document.getElementById('checksWrap');
     wrap.innerHTML = '';
     CHECKS.forEach(([key,label])=>{
       const btn = document.createElement('button');
       btn.className = 'check' + (rec[key] ? ' on' : '');
-      btn.innerHTML = '<span class="box">'+(rec[key]?'✓':'')+'</span><span>'+label+'</span>';
+      btn.innerHTML = '<span class="led"></span><span class="lbl">'+label+'</span>';
       btn.onclick = ()=> upd(k, r => r[key] = r[key]?0:1);
       wrap.appendChild(btn);
     });
     const gp = document.getElementById('gymPill');
-    gp.className = 'pill gym'+(rec.g?' on':'');
+    gp.className = 'hw-btn'+(rec.g?' on-g':'');
     gp.onclick = ()=> upd(k, r => r.g = r.g?0:1);
     const dp = document.getElementById('drinkPill');
-    dp.className = 'pill warn'+(rec.d?' on':'');
+    dp.className = 'hw-btn'+(rec.d?' on-r':'');
     dp.onclick = ()=> upd(k, r => r.d = r.d?0:1);
     const tp = document.getElementById('takeawayPill');
-    tp.className = 'pill warn'+((rec.t||0)>0?' on':'');
+    tp.className = 'hw-btn'+((rec.t||0)>0?' on-r':'');
     document.getElementById('twN').textContent = rec.t||0;
     tp.onclick = ()=> upd(k, r => r.t = ((r.t||0)+1)%3);
-    document.getElementById('dayPts').textContent = L.corePts(rec)+' pts';
     const w = L.weekAgg(state, selected, t);
     document.getElementById('dayHint').textContent =
       'Week so far: '+w.drinks+'/2 big drink days · '+w.tw+'/1 takeaway'+(w.tw===1?'':'s')+' · '+w.gym+'/2 gym.';
@@ -523,6 +603,139 @@ if (typeof document !== 'undefined') (function(){
       grid.appendChild(cell);
     }
   }
+
+  // ---- Rescue videos: play inside the app, never link out. Add clips by
+  // dropping an mp4 in videos/ and listing it here; picks at random. ----
+  // Pages caches files for 10 min — changed clip = new URL (bump ?v).
+  const VIDEOS = ['videos/rescue-01.mp4?v=2'];
+  const overlay = document.getElementById('videoOverlay');
+  const vid = document.getElementById('rescueVid');
+  const rescueBtn = document.getElementById('rescueBtn');
+  rescueBtn.hidden = VIDEOS.length===0;
+  rescueBtn.onclick = ()=>{
+    vid.src = VIDEOS[Math.floor(Math.random()*VIDEOS.length)];
+    overlay.hidden = false;
+    vid.play().catch(()=>{});
+  };
+  function closeVideo(){
+    vid.pause(); vid.removeAttribute('src'); vid.load();
+    overlay.hidden = true;
+  }
+  document.getElementById('videoClose').onclick = closeVideo;
+  vid.onended = closeVideo;
+
+  // ---- Photos: goal + monthly mirror shots. Stored ON DEVICE ONLY
+  // (IndexedDB) — the repo and site are public, photos must never leave
+  // the phone. Originals stay in the camera roll. ----
+  let pdb = null;
+  function idb(){
+    return new Promise((res, rej)=>{
+      if(pdb) return res(pdb);
+      const r = indexedDB.open('slopaoke-photos', 1);
+      r.onupgradeneeded = ()=> r.result.createObjectStore('photos');
+      r.onsuccess = ()=>{ pdb = r.result; res(pdb); };
+      r.onerror = ()=> rej(r.error);
+    });
+  }
+  function idbWrite(fn){
+    return idb().then(db => new Promise((res, rej)=>{
+      const tx = db.transaction('photos','readwrite');
+      fn(tx.objectStore('photos'));
+      tx.oncomplete = res;
+      tx.onerror = ()=> rej(tx.error);
+    }));
+  }
+  function idbAll(){
+    return idb().then(db => new Promise((res, rej)=>{
+      const tx = db.transaction('photos');
+      const st = tx.objectStore('photos');
+      const keys = st.getAllKeys(), vals = st.getAll();
+      tx.oncomplete = ()=> res(keys.result.map((k,i)=> Object.assign({key:k}, vals.result[i])));
+      tx.onerror = ()=> rej(tx.error);
+    }));
+  }
+
+  const shotsEl = document.getElementById('shots');
+  const photoFile = document.getElementById('photoFile');
+  const photoOverlay = document.getElementById('photoOverlay');
+  const photoFull = document.getElementById('photoFull');
+  let photos = [], shotUrls = [], pendingSlot = null, viewing = null;
+
+  function compress(file){
+    return new Promise((res, rej)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const s = Math.min(1, 1280/Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(img.src);
+        c.toBlob(b => b ? res(b) : rej(new Error('encode failed')), 'image/jpeg', .82);
+      };
+      img.onerror = rej;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function mkShot(p, emptyLabel, onEmpty){
+    const b = document.createElement('button');
+    b.className = 'shot';
+    if(p){
+      const u = URL.createObjectURL(p.blob); shotUrls.push(u);
+      b.innerHTML = '<img alt=""><div class="cap">'+p.label+'</div>';
+      b.querySelector('img').src = u;
+      b.onclick = ()=>{
+        viewing = p;
+        document.getElementById('photoCap').textContent = p.label;
+        photoFull.src = URL.createObjectURL(p.blob);
+        photoOverlay.hidden = false;
+      };
+    } else {
+      b.innerHTML = '<div class="ph">'+emptyLabel+'</div>';
+      b.onclick = onEmpty;
+    }
+    return b;
+  }
+
+  function renderShots(){
+    shotUrls.forEach(URL.revokeObjectURL); shotUrls = [];
+    shotsEl.innerHTML = '';
+    const goal = photos.find(p => p.key==='goal');
+    shotsEl.appendChild(mkShot(goal, 'Goal', ()=>{ pendingSlot='goal'; photoFile.click(); }));
+    photos.filter(p => p.key!=='goal').sort((a,b)=> a.ts-b.ts)
+      .forEach(p => shotsEl.appendChild(mkShot(p)));
+    shotsEl.appendChild(mkShot(null, '+ Add', ()=>{ pendingSlot='dated'; photoFile.click(); }));
+  }
+
+  function loadPhotos(){
+    idbAll().then(ps => { photos = ps; renderShots(); })
+      .catch(()=>{ photos = []; renderShots(); });
+  }
+
+  photoFile.onchange = ()=>{
+    const f = photoFile.files[0];
+    photoFile.value = '';
+    if(!f || !pendingSlot) return;
+    const key = pendingSlot==='goal' ? 'goal' : 'p'+Date.now();
+    const label = pendingSlot==='goal' ? 'Goal' : fmtShort(today());
+    compress(f)
+      .then(blob => idbWrite(st => st.put({blob, label, ts:Date.now()}, key)))
+      .then(loadPhotos)
+      .catch(e => console.error('photo save failed', e));
+  };
+  function closePhoto(){
+    if(photoFull.src) URL.revokeObjectURL(photoFull.src);
+    photoFull.removeAttribute('src');
+    photoOverlay.hidden = true;
+    viewing = null;
+  }
+  document.getElementById('photoClose').onclick = closePhoto;
+  document.getElementById('photoDelete').onclick = ()=>{
+    if(!viewing) return;
+    if(!confirm('Delete this photo?')) return;
+    idbWrite(st => st.delete(viewing.key)).then(()=>{ closePhoto(); loadPhotos(); });
+  };
+  loadPhotos();
 
   async function save(){
     try{

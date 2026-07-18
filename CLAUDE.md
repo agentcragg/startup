@@ -28,8 +28,14 @@ used exclusively on his phone, added to home screen.
 5. **No flavour copy / slogans / taglines.** The user hates them ("Points are
    the contract" got binned). Plain functional language only.
 6. **No employer branding.** Earlier version used BIFA blue (#2B32C8) because
-   the user works there; he hated it. Current palette: dark neutral
-   (#141414 bg), one green accent (#4ade80), red (#f87171) for drink/finale.
+   the user works there; he hated it. Design language (agreed 18 Jul 2026,
+   from his references — 70s hi-fi front panels, 60s French editorial/YSL
+   Rive Gauche): charcoal (#101010 bg, #181818 panels), cream ink #e8e2d4
+   (paper, not white), letterspaced Helvetica caps + Georgia italic for
+   dates, hairlines and precise alignment. Green #4ade80 exists ONLY as
+   small LED dots (never fills); red #e0483e for drink/finale/target
+   tick/rescue record-dot. **No skeuomorphic textures** — the discipline
+   of the hardware, not its skin. Stark, tiny pops of colour.
 7. **Past days editable via the calendar grid; future days locked.**
    Tapping a past cell (Progress view) jumps to the Today view with that
    day loaded in the editor; a "Back to today" button returns.
@@ -67,10 +73,25 @@ used exclusively on his phone, added to home screen.
 ## App structure (post backlog item 1)
 
 Two views with a fixed bottom tab bar:
-- **Today** (default): status word + week bar (the half-second read), the
-  day editor, and the rescue-video button. That's all.
-- **Progress**: week detail in digits, checkpoint bar, stats row, calendar,
-  rules card.
+- **Today** (default): VU meter (needle = points earned this week on a
+  fixed 0–20 scale, sprung CSS transition; ghost needle = earned+pending;
+  red tick = weekly target) with indicator lamp (paceStatus) + small
+  readout; the day editor (latching push-buttons with LED dots — the user
+  rejected toggle switches as too easy to flick); rescue button. The
+  per-day points digit was dropped (redundancy — the needle is the
+  feedback).
+- **Progress**: week detail in digits, checkpoint bar (medal ticks,
+  silver label on a second tier so labels never collide), stats row,
+  photos, calendar, rules card.
+
+## Photos (on-device only — NEVER in the repo)
+
+Goal photo + monthly mirror shots live in IndexedDB (`slopaoke-photos`)
+on the phone, added via file input from the camera roll, compressed to
+≤1280px JPEG. The repo/site are public, so photos must never be
+committed or uploaded anywhere. No sync: clearing site data loses them
+(originals remain in camera roll). Goal slot is fixed; dated photos
+append; viewer overlay has delete.
 
 ## Rescue videos
 
@@ -122,8 +143,9 @@ keeps working.
 1. ~~**Restructure hierarchy.**~~ DONE — Today/Progress split, see "App
    structure" above. Open question for the user: "Behind pace" renders in
    red; flip to neutral grey if it reads as punishment.
-2. **More visual, fewer numbers.** The app currently communicates almost
-   entirely in tabular digits. User wants it to "say more" visually.
+2. ~~**More visual, fewer numbers.**~~ LARGELY DONE (18 Jul 2026) — hi-fi
+   panel reskin: VU meter, lamp, LED buttons. Calendar-as-story (item 6)
+   is the remaining visual work.
 3. **Kill redundancy.** Weekly target, checkpoint bar, campaign total are
    three framings of "am I on pace" — collapse.
 4. **Feedback moments.** Hitting the weekly target, earning a medal, banking
