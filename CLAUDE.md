@@ -80,9 +80,11 @@ INSIDE the app (`videos/*.mp4` + `VIDEOS` list in index.html, random
 pick, auto-close on end). **Never link out to TikTok** — that ends in
 doomscrolling. Clips stream from network (excluded from the service
 worker: cached full responses break iOS Range requests), so rescue
-needs signal for now. `videos/rescue-01.mp4` is a placeholder test
-pattern awaiting the user's real clips. Repo is public — clips are
-saved from other creators, user is fine with that.
+needs signal for now. Repo is public — clips are
+saved from other creators, user is fine with that. Pages serves with
+a 10-minute HTTP cache, so replacing a clip's content needs a new URL
+(new filename, or bump the `?v=` in VIDEOS) or phones play the stale
+copy.
 
 ## Context the app doesn't show but the plan assumes
 
