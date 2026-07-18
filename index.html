@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slopaoke campaign</title>
+<style>
+  :root{
+    --bg:#141414; --card:#1d1d1d; --line:#333;
+    --text:#ececec; --muted:#8f8f8f;
+    --done:#4ade80; --done-dim:rgba(74,222,128,.35);
+    --drink:#f87171; --mark:#c9c9c9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,sans-serif;
+    font-size:15px; line-height:1.4;
+    max-width:520px; margin:0 auto; padding:20px 16px 56px;
+  }
+  h1{font-size:19px; font-weight:600; margin-bottom:2px}
+  .sub{color:var(--muted); font-size:13px; margin-bottom:16px}
+  .banner{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; margin-bottom:12px; font-size:14px; color:var(--muted);
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:14px; margin-bottom:12px;
+  }
+  /* hero: weekly target */
+  .hero .big{font-size:44px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums}
+  .hero .big.done{color:var(--done)}
+  .hero .lbl{font-size:13px; color:var(--muted); margin:4px 0 12px}
+  .wbar{position:relative; height:12px; background:#2a2a2a; border-radius:6px; overflow:hidden; margin-bottom:8px}
+  .wbar .earn{position:absolute; top:0; left:0; bottom:0; background:var(--done)}
+  .wbar .pend{position:absolute; top:0; bottom:0; background:var(--done-dim)}
+  .hero .detail{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .hero .detail b{color:var(--text); font-weight:600}
+  /* checkpoint */
+  .cp-head{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:14px}
+  .bar-wrap{position:relative; height:10px; margin-bottom:24px}
+  .bar-track{position:absolute; inset:0; background:#2a2a2a; border-radius:5px}
+  .bar-fill{position:absolute; top:0; left:0; bottom:0; background:var(--text); border-radius:5px; min-width:2px}
+  .mark{position:absolute; top:-3px; width:2px; height:16px; background:var(--line)}
+  .mark.hit{background:var(--done)}
+  .mark span{position:absolute; top:18px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--muted); white-space:nowrap}
+  .mark.hit span{color:var(--done)}
+  .cp-status{font-size:13px; color:var(--muted); margin-top:14px; font-variant-numeric:tabular-nums}
+  /* stat row */
+  .stats{display:flex; gap:10px; margin-bottom:12px}
+  .stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center}
+  .stat .num{font-size:19px; font-weight:600; font-variant-numeric:tabular-nums}
+  .stat .num small{font-size:11px; color:var(--muted); font-weight:400}
+  .stat .lbl{font-size:11px; color:var(--muted); margin-top:2px}
+  .stat .mini{height:4px; background:#2a2a2a; border-radius:2px; margin-top:7px; overflow:hidden}
+  .stat .mini div{height:100%; background:var(--done); border-radius:2px}
+  /* day editor */
+  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
+  .day-head h2{font-size:15px; font-weight:600}
+  .day-pts{font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .check{
+    display:flex; align-items:center; gap:10px; width:100%;
+    background:none; border:1px solid var(--line); border-radius:8px;
+    padding:12px; margin-bottom:8px; color:var(--text);
+    font:inherit; cursor:pointer; text-align:left;
+  }
+  .check .box{
+    width:20px; height:20px; border-radius:5px; flex:none;
+    border:1.5px solid var(--muted); display:grid; place-items:center;
+    font-size:13px; color:#141414;
+  }
+  .check.on{border-color:var(--done)}
+  .check.on .box{background:var(--done); border-color:var(--done)}
+  .pills{display:flex; gap:8px; margin-top:2px}
+  .pill{
+    flex:1; border:1px solid var(--line); border-radius:8px; padding:10px 6px;
+    background:none; color:var(--text); font:inherit; font-size:13px; cursor:pointer;
+  }
+  .pill.gym.on{border-color:var(--done); color:var(--done)}
+  .pill.warn.on{border-color:var(--drink); color:var(--drink)}
+  .hint{font-size:12px; color:var(--muted); margin-top:10px}
+  /* grid */
+  .dow,.grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+  .dow{margin-bottom:4px}
+  .dow span{font-size:10px; text-align:center; color:var(--muted)}
+  .cell{
+    aspect-ratio:1; border-radius:4px; border:1px solid var(--line);
+    background:none; cursor:pointer; position:relative; padding:0;
+  }
+  .cell:disabled{cursor:default; opacity:.3; border-style:dashed}
+  .cell.p1{background:#7c7c7c; border-color:transparent}
+  .cell.p2{background:var(--done); border-color:transparent}
+  .cell.gym::after{content:""; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--text)}
+  .cell.p2.gym::after{background:#141414}
+  .cell.drink::before{content:""; position:absolute; top:2px; right:2px; width:4px; height:4px; border-radius:50%; background:var(--drink)}
+  .cell.cp{box-shadow:0 0 0 1.5px var(--mark)}
+  .cell.finale{box-shadow:0 0 0 1.5px var(--drink)}
+  .cell.sel{outline:2px solid var(--text); outline-offset:1px}
+  .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; font-size:11px; color:var(--muted)}
+  .legend span{display:flex; align-items:center; gap:4px}
+  .sw{width:10px; height:10px; border-radius:3px; position:relative}
+  .rules{font-size:12.5px; color:var(--muted); line-height:1.7}
+  h3{font-size:14px; font-weight:600; margin-bottom:8px}
+  button:focus-visible,.cell:focus-visible{outline:2px solid var(--text); outline-offset:2px}
+</style>
+</head>
+<body>
+  <h1>Slopaoke campaign</h1>
+  <p class="sub">1 Aug – 31 Oct 2026 · win at 182 points</p>
+
+  <div id="banner"></div>
+
+  <div class="card hero">
+    <div class="big" id="heroNum">0</div>
+    <div class="lbl" id="heroLbl">points needed this week</div>
+    <div class="wbar"><div class="earn" id="wbarEarn"></div><div class="pend" id="wbarPend"></div></div>
+    <div class="detail" id="heroDetail"></div>
+  </div>
+
+  <div class="card">
+    <div class="cp-head"><span id="cpName"></span><span id="cpDays"></span></div>
+    <div class="bar-wrap" id="barWrap">
+      <div class="bar-track"></div>
+      <div class="bar-fill" id="barFill"></div>
+    </div>
+    <p class="cp-status" id="cpStatus"></p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num" id="totalNum">0<small>/182</small></div>
+      <div class="lbl">Campaign</div>
+      <div class="mini"><div id="totalMini" style="width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="num" id="streakNum">0</div>
+      <div class="lbl">Log streak</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="gymWeekNum">0<small>/2</small></div>
+      <div class="lbl">Gym wk</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="gymTotalNum">0<small>/26</small></div>
+      <div class="lbl">Gym total</div>
+      <div class="mini"><div id="gymMini" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card" id="dayCard">
+    <div class="day-head">
+      <h2 id="dayTitle">—</h2>
+      <div class="day-pts" id="dayPts">0 pts</div>
+    </div>
+    <div id="checksWrap"></div>
+    <div class="pills">
+      <button class="pill gym" id="gymPill">Gym session</button>
+      <button class="pill warn" id="drinkPill">Big drink day</button>
+      <button class="pill warn" id="takeawayPill">Takeaway: <span id="twN">0</span></button>
+    </div>
+    <p class="hint" id="dayHint"></p>
+  </div>
+
+  <div class="card">
+    <h3>Calendar</h3>
+    <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <span><span class="sw" style="background:#7c7c7c"></span>1 pt</span>
+      <span><span class="sw" style="background:#4ade80"></span>2 pts</span>
+      <span><span class="sw" style="background:#2a2a2a"><span style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#ececec"></span></span>Gym</span>
+      <span><span class="sw" style="background:#2a2a2a"><span style="position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#f87171"></span></span>Big drink</span>
+      <span><span class="sw" style="border:1.5px solid #c9c9c9"></span>Checkpoint</span>
+      <span><span class="sw" style="border:1.5px solid #f87171"></span>31 Oct</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="rules">
+      Daily: logged food +1 · protein 130g +1.<br>
+      Report as they happen: big drink days (3+ drinks) and takeaways. No points lost, ever.<br>
+      Week ends with ≤2 big drink days +3 · ≤1 takeaway +3. Max 20/week.<br>
+      Gym is tracked separately — 2/week, 26 total. Not points.<br>
+      Checkpoints every fortnight: bronze 60% · silver 75% · gold 90%.
+    </p>
+  </div>
+
+<script>
+const Logic = (function(){
+  const START = new Date(2026,7,1), END = new Date(2026,9,31);
+  const WIN = 182;
+  const PERIODS = [
+    ['Checkpoint 1', new Date(2026,7,1),  new Date(2026,7,14)],
+    ['Checkpoint 2', new Date(2026,7,15), new Date(2026,7,31)],
+    ['Checkpoint 3', new Date(2026,8,1),  new Date(2026,8,14)],
+    ['Checkpoint 4', new Date(2026,8,15), new Date(2026,8,30)],
+    ['Checkpoint 5', new Date(2026,9,1),  new Date(2026,9,14)],
+    ['Checkpoint 6', new Date(2026,9,15), new Date(2026,9,31)]
+  ];
+  function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+  function dayCount(a,b){ return Math.round((b-a)/864e5)+1; }
+  function mondayOf(d){ const x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+  function clamp(d){ return d<START ? new Date(START) : (d>END ? new Date(END) : d); }
+  function getDay(state,k){ return state.days[k] || {l:0,p:0,d:0,g:0,t:0}; }
+  function corePts(rec){ return (rec.l?1:0)+(rec.p?1:0); }
+
+  // One Mon–Sun week. Bonuses land only once the week has ended, and only
+  // if the week saw any logging at all (no free points for empty weeks).
+  function weekAgg(state, anyDate, todayDate){
+    const mon = mondayOf(anyDate), end = addDays(mon,6);
+    let gym=0, drinks=0, tw=0, core=0;
+    for(let d=new Date(mon); d<=end; d.setDate(d.getDate()+1)){
+      if(d<START || d>END) continue;
+      const r = getDay(state, iso(d));
+      if(r.g) gym++;
+      if(r.d) drinks++;
+      tw += r.t||0;
+      core += corePts(r);
+    }
+    const over = end < todayDate;
+    const drinkBonus = (over && core>0 && drinks<=2) ? 3 : 0;
+    const twBonus    = (over && core>0 && tw<=1)     ? 3 : 0;
+    // pending: what the week is currently on track to earn, before it ends
+    const pending = (!over && core>0) ? ((drinks<=2?3:0)+(tw<=1?3:0)) : 0;
+    return {mon, end, gym, drinks, tw, core, drinkBonus, twBonus, pending, pts:core+drinkBonus+twBonus};
+  }
+
+  // Points earned in [a,b]; weekly bonuses credit to the range containing the
+  // week's end (tail week credits to the campaign's final range).
+  function rangePts(state, a, b, todayDate){
+    let pts = 0;
+    for(let d=new Date(a); d<=b; d.setDate(d.getDate()+1)) pts += corePts(getDay(state, iso(d)));
+    const seen = {};
+    for(let d=new Date(a); d<=b; d.setDate(d.getDate()+1)){
+      const mk = iso(mondayOf(d));
+      if(seen[mk]) continue;
+      seen[mk] = 1;
+      const w = weekAgg(state, d, todayDate);
+      const inRange = w.end>=a && w.end<=b;
+      const tail = iso(b)===iso(END) && w.end>b;
+      if(inRange || tail) pts += w.drinkBonus + w.twBonus;
+    }
+    return pts;
+  }
+
+  function gymTotal(state){
+    let n = 0;
+    for(let d=new Date(START); d<=END; d.setDate(d.getDate()+1)) if(getDay(state,iso(d)).g) n++;
+    return n;
+  }
+
+  // Log streak: consecutive days with food logged (today may be pending).
+  function streak(state, todayDate){
+    let d = new Date(todayDate);
+    if(d>END) d = new Date(END);
+    if(d<START) return 0;
+    if(!getDay(state, iso(d)).l) d = addDays(d,-1);
+    let s = 0;
+    while(d>=START && getDay(state, iso(d)).l){ s++; d = addDays(d,-1); }
+    return s;
+  }
+
+  // Weekly pace: what this week must earn for the remaining weeks to average out to the win line.
+  function weekPlan(state, todayDate){
+    const t = clamp(todayDate);
+    const mon = mondayOf(t);
+    const lastMon = mondayOf(END);
+    const weeksLeft = Math.round((lastMon - mon)/(7*864e5)) + 1;
+    const before = mon > START ? rangePts(state, START, addDays(mon,-1), todayDate) : 0;
+    const remaining = Math.max(0, WIN - before);
+    const target = Math.min(20, Math.ceil(remaining / weeksLeft));
+    const w = weekAgg(state, t, todayDate);
+    const earned = w.core + w.drinkBonus + w.twBonus;
+    return {target, earned, pending:w.pending, weeksLeft, remaining,
+            need: Math.max(0, target - earned - w.pending)};
+  }
+
+  function periodFor(date){
+    const t = clamp(date);
+    return PERIODS.find(p => t>=p[1] && t<=p[2]) || PERIODS[0];
+  }
+  function periodMax(p){ return Math.round(40 * dayCount(p[1],p[2]) / 14); }
+
+  return {START, END, WIN, PERIODS, iso, addDays, dayCount, mondayOf, clamp, getDay,
+          corePts, weekAgg, rangePts, gymTotal, streak, weekPlan, periodFor, periodMax};
+})();
+if (typeof module !== 'undefined') module.exports = Logic;
+
+if (typeof document !== 'undefined') (function(){
+  const L = Logic, KEY = 'slopaoke-campaign-v2';
+  const CHECKS = [['l','Logged food'],['p','Protein 130g']];
+  const CP_ENDS = L.PERIODS.map(p => L.iso(p[2]));
+  let state = {days:{}};
+  let selected;
+
+  function today(){ const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),n.getDate()); }
+  function fmt(d){ return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+  selected = L.clamp(today());
+
+  function upd(k, fn){ const r = L.getDay(state,k); fn(r); state.days[k]=r; save(); render(); }
+
+  function render(){
+    const t = today(), k = L.iso(selected), rec = L.getDay(state,k);
+
+    // banner
+    const banner = document.getElementById('banner');
+    if(t < L.START){
+      const n = L.dayCount(t, L.START)-1;
+      banner.innerHTML = '<div class="banner">Starts in '+n+' day'+(n===1?'':'s')+'.</div>';
+    } else if(t > L.END){
+      banner.innerHTML = '<div class="banner">Campaign finished.</div>';
+    } else banner.innerHTML = '';
+
+    // hero: weekly pace
+    const plan = L.weekPlan(state, t);
+    const heroNum = document.getElementById('heroNum');
+    heroNum.textContent = plan.need;
+    heroNum.className = 'big' + (plan.need===0 ? ' done' : '');
+    document.getElementById('heroLbl').textContent =
+      plan.need===0 ? 'week target hit' : 'points needed this week';
+    const pct = v => Math.min(100, plan.target>0 ? v/plan.target*100 : 100);
+    document.getElementById('wbarEarn').style.width = pct(plan.earned)+'%';
+    const pendEl = document.getElementById('wbarPend');
+    pendEl.style.left = pct(plan.earned)+'%';
+    pendEl.style.width = Math.max(0, pct(plan.earned+plan.pending)-pct(plan.earned))+'%';
+    document.getElementById('heroDetail').innerHTML =
+      '<b>'+plan.earned+'</b> earned'+(plan.pending?' · <b>+'+plan.pending+'</b> bonus pending':'')+
+      ' · target <b>'+plan.target+'</b> · '+plan.weeksLeft+' week'+(plan.weeksLeft===1?'':'s')+' left';
+
+    // checkpoint
+    const P = L.periodFor(t), pmax = L.periodMax(P);
+    const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
+    const ppts = t>=P[1] ? L.rangePts(state, P[1], pEnd, t) : 0;
+    document.getElementById('cpName').textContent = P[0]+' · '+fmt(P[1]).slice(4)+' – '+fmt(P[2]).slice(4);
+    const left = (t>=P[1] && t<=P[2]) ? L.dayCount(t,P[2])-1 : 0;
+    document.getElementById('cpDays').textContent = (t>=P[1] && t<=P[2]) ? left+' days left' : '';
+    const bw = document.getElementById('barWrap');
+    bw.querySelectorAll('.mark').forEach(m=>m.remove());
+    let next = null;
+    [['Bronze',.6],['Silver',.75],['Gold',.9]].forEach(([name,f])=>{
+      const th = Math.round(pmax*f);
+      if(ppts<th && !next) next = [name,th];
+      const m = document.createElement('div');
+      m.className = 'mark'+(ppts>=th?' hit':'');
+      m.style.left = (f*100)+'%';
+      m.innerHTML = '<span>'+name+' '+th+'</span>';
+      bw.appendChild(m);
+    });
+    document.getElementById('barFill').style.width = Math.min(100, ppts/pmax*100)+'%';
+    document.getElementById('cpStatus').textContent =
+      ppts+' / '+pmax + (next ? ' · '+(next[1]-ppts)+' to '+next[0].toLowerCase() : ' · gold reached');
+
+    // stats
+    const total = t>=L.START ? L.rangePts(state, L.START, L.clamp(t), t) : 0;
+    document.getElementById('totalNum').innerHTML = total+'<small>/182</small>';
+    document.getElementById('totalMini').style.width = Math.min(100, total/L.WIN*100)+'%';
+    document.getElementById('streakNum').textContent = L.streak(state, t);
+    document.getElementById('gymWeekNum').innerHTML = L.weekAgg(state, L.clamp(t), t).gym+'<small>/2</small>';
+    const gt = L.gymTotal(state);
+    document.getElementById('gymTotalNum').innerHTML = gt+'<small>/26</small>';
+    document.getElementById('gymMini').style.width = Math.min(100, gt/26*100)+'%';
+
+    // day editor
+    document.getElementById('dayTitle').textContent = (L.iso(t)===k ? 'Today · ' : '') + fmt(selected);
+    const wrap = document.getElementById('checksWrap');
+    wrap.innerHTML = '';
+    CHECKS.forEach(([key,label])=>{
+      const btn = document.createElement('button');
+      btn.className = 'check' + (rec[key] ? ' on' : '');
+      btn.innerHTML = '<span class="box">'+(rec[key]?'✓':'')+'</span><span>'+label+'</span>';
+      btn.onclick = ()=> upd(k, r => r[key] = r[key]?0:1);
+      wrap.appendChild(btn);
+    });
+    const gp = document.getElementById('gymPill');
+    gp.className = 'pill gym'+(rec.g?' on':'');
+    gp.onclick = ()=> upd(k, r => r.g = r.g?0:1);
+    const dp = document.getElementById('drinkPill');
+    dp.className = 'pill warn'+(rec.d?' on':'');
+    dp.onclick = ()=> upd(k, r => r.d = r.d?0:1);
+    const tp = document.getElementById('takeawayPill');
+    tp.className = 'pill warn'+((rec.t||0)>0?' on':'');
+    document.getElementById('twN').textContent = rec.t||0;
+    tp.onclick = ()=> upd(k, r => r.t = ((r.t||0)+1)%3);
+    document.getElementById('dayPts').textContent = L.corePts(rec)+' pts';
+    const w = L.weekAgg(state, selected, t);
+    document.getElementById('dayHint').textContent =
+      'Week so far: '+w.drinks+'/2 big drink days · '+w.tw+'/1 takeaway'+(w.tw===1?'':'s')+' · '+w.gym+'/2 gym.';
+
+    // grid
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    for(let d=new Date(L.mondayOf(L.START)); d<=L.END; d.setDate(d.getDate()+1)){
+      const cell = document.createElement('button');
+      cell.className = 'cell';
+      if(d < L.START){ cell.disabled = true; cell.style.visibility='hidden'; grid.appendChild(cell); continue; }
+      const dk = L.iso(d), r = L.getDay(state,dk), pts = L.corePts(r);
+      if(pts>0) cell.classList.add('p'+pts);
+      if(r.g) cell.classList.add('gym');
+      if(r.d) cell.classList.add('drink');
+      if(CP_ENDS.includes(dk)) cell.classList.add(dk===L.iso(L.END)?'finale':'cp');
+      if(dk===k) cell.classList.add('sel');
+      cell.setAttribute('aria-label', fmt(d)+', '+pts+' points');
+      if(d > t) cell.disabled = true;
+      else {
+        const dd = new Date(d);
+        cell.onclick = ()=>{ selected = dd; render(); };
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  async function save(){
+    try{
+      if(window.storage) await window.storage.set(KEY, JSON.stringify(state));
+      else localStorage.setItem(KEY, JSON.stringify(state));
+    }catch(e){ console.error('save failed', e); }
+  }
+  (async function load(){
+    try{
+      if(window.storage){
+        const r = await window.storage.get(KEY);
+        if(r && r.value) state = JSON.parse(r.value);
+      }else{
+        const v = localStorage.getItem(KEY);
+        if(v) state = JSON.parse(v);
+      }
+    }catch(e){ /* first run */ }
+    if(!state.days) state = {days:{}};
+    render();
+  })();
+})();
+</script>
+</body>
+</html>
