@@ -84,6 +84,18 @@ Two views with a fixed bottom tab bar:
 - WFH days were considered as a bonus mechanic and **deliberately parked**
   ("a bit tricky"). Don't reintroduce without asking.
 
+## Hosting & deploy
+
+- Live at https://agentcragg.github.io/startup/ (GitHub Pages, serves the
+  `gh-pages` branch). Deploy = push to `main`: the pages.yml workflow runs
+  test.js then force-pushes `main` → `gh-pages`. Never edit `gh-pages`
+  directly. (Pages API enablement failed for the workflow token, hence the
+  branch route.)
+- Offline PWA: sw.js caches the shell (stale-while-revalidate, so a deploy
+  appears on the *second* visit after it). manifest.json + icon-*.png give
+  the home-screen install its name/icon. If sw.js's asset list changes,
+  bump the CACHE version in sw.js.
+
 ## Testing
 
 `node test.js` extracts the Logic module from index.html and runs ~29
