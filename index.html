@@ -39,7 +39,8 @@
     padding:16px; margin-bottom:14px;
   }
   .panel .rule{height:1px; background:var(--line); margin:14px -16px}
-  .p-head{font-size:12px; font-weight:700; margin-bottom:12px}
+  .p-head{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:700; margin-bottom:12px}
+  .p-head .d{font-size:14px; color:var(--ink-dim); font-weight:400}
   .banner{font-size:13px; color:var(--ink-dim); letter-spacing:.04em}
 
   /* meter */
@@ -102,18 +103,16 @@
   .detail{font-size:12.5px; color:var(--ink-dim); font-variant-numeric:tabular-nums; letter-spacing:.03em}
   .detail b{color:var(--ink); font-weight:700}
 
-  /* checkpoint */
-  .cp-head{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:700; margin-bottom:16px}
-  .cp-head .serif{font-weight:400; font-size:14px; color:var(--ink-dim)}
-  .bar-wrap{position:relative; height:8px; margin-bottom:40px}
-  .bar-track{position:absolute; inset:0; background:var(--well); border:1px solid var(--line); border-radius:4px}
-  .bar-fill{position:absolute; top:1px; left:1px; bottom:1px; background:var(--ink); border-radius:3px; min-width:2px}
-  .mark{position:absolute; top:-4px; width:1.5px; height:16px; background:var(--ink-faint)}
-  .mark.hit{background:var(--led); box-shadow:0 0 4px var(--led-glow)}
-  .mark span{position:absolute; top:19px; left:50%; transform:translateX(-50%);
-    font-size:9px; color:var(--ink-dim); white-space:nowrap; letter-spacing:.1em; text-transform:uppercase}
-  .mark.hit span{color:var(--led)}
-  .cp-status{font-size:12px; color:var(--ink-dim); margin-top:16px; font-variant-numeric:tabular-nums; letter-spacing:.06em}
+  /* campaign pen trace */
+  .wave-wrap{position:relative}
+  #wave{display:block; width:100%; touch-action:none}
+  .scrub{
+    position:absolute; top:-8px; transform:translateX(-50%);
+    background:var(--bg); border:1px solid var(--line); border-radius:4px;
+    padding:5px 8px; font-size:9.5px; font-weight:600; color:var(--ink);
+    letter-spacing:.08em; white-space:nowrap; pointer-events:none; z-index:1;
+  }
+  .cp-status{font-size:12px; color:var(--ink-dim); margin-top:10px; font-variant-numeric:tabular-nums; letter-spacing:.06em}
 
   /* stat row */
   .stats{display:flex; gap:10px; margin-bottom:14px}
@@ -132,25 +131,6 @@
   .shot .ph{width:86px; height:114px; border:1px dashed #3a3833; border-radius:5px;
     display:grid; place-items:center; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim)}
 
-  /* grid */
-  .dow,.grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
-  .dow{margin-bottom:6px}
-  .dow span{font-size:9px; text-align:center; color:var(--ink-dim); letter-spacing:.1em}
-  .cell{
-    aspect-ratio:1; border-radius:3px; border:1px solid #262420;
-    background:var(--well); cursor:pointer; position:relative; padding:0;
-  }
-  .cell:disabled{cursor:default; opacity:.3; border-style:dashed}
-  .cell.p1{background:var(--ink-faint); border-color:transparent}
-  .cell.p2{background:var(--ink); border-color:transparent}
-  .cell.gym::after{content:""; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--led)}
-  .cell.drink::before{content:""; position:absolute; top:2px; right:2px; width:4px; height:4px; border-radius:50%; background:var(--red)}
-  .cell.cp{box-shadow:0 0 0 1.5px var(--ink-dim)}
-  .cell.finale{box-shadow:0 0 0 1.5px var(--red)}
-  .cell.sel{outline:2px solid var(--ink); outline-offset:1px}
-  .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; font-size:9.5px; color:var(--ink-dim); letter-spacing:.08em; text-transform:uppercase}
-  .legend span{display:flex; align-items:center; gap:5px}
-  .sw{width:10px; height:10px; border-radius:3px; position:relative}
   .rules{font-size:12px; color:var(--ink-dim); line-height:1.8; letter-spacing:.02em}
 
   /* overlays */
@@ -234,10 +214,10 @@
   </div>
 
   <div class="panel">
-    <div class="cp-head"><span class="caps" id="cpName"></span><span class="serif" id="cpDays"></span></div>
-    <div class="bar-wrap" id="barWrap">
-      <div class="bar-track"></div>
-      <div class="bar-fill" id="barFill"></div>
+    <div class="p-head"><span class="t caps">Campaign</span><span class="d serif" id="campDay"></span></div>
+    <div class="wave-wrap">
+      <svg id="wave" viewBox="0 0 326 124" aria-label="campaign trace"></svg>
+      <div class="scrub caps" id="scrub" hidden></div>
     </div>
     <p class="cp-status" id="cpStatus"></p>
   </div>
@@ -267,20 +247,6 @@
     <div class="p-head caps">Photos</div>
     <div class="shots" id="shots"></div>
     <input type="file" id="photoFile" accept="image/*" hidden>
-  </div>
-
-  <div class="panel">
-    <div class="p-head caps">Calendar</div>
-    <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-    <div class="grid" id="grid"></div>
-    <div class="legend">
-      <span><span class="sw" style="background:#55524a"></span>1 pt</span>
-      <span><span class="sw" style="background:#e8e2d4"></span>2 pts</span>
-      <span><span class="sw" style="background:#101010;border:1px solid #262420"><span style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#4ade80"></span></span>Gym</span>
-      <span><span class="sw" style="background:#101010;border:1px solid #262420"><span style="position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#e0483e"></span></span>Big drink</span>
-      <span><span class="sw" style="border:1.5px solid #8a857a"></span>Checkpoint</span>
-      <span><span class="sw" style="border:1.5px solid #e0483e"></span>31 Oct</span>
-    </div>
   </div>
 
   <div class="panel">
@@ -432,7 +398,6 @@ if (typeof module !== 'undefined') module.exports = Logic;
 if (typeof document !== 'undefined') (function(){
   const L = Logic, KEY = 'slopaoke-campaign-v2';
   const CHECKS = [['l','Logged food'],['p','Protein 130g']];
-  const CP_ENDS = L.PERIODS.map(p => L.iso(p[2]));
   let state = {days:{}};
   let selected;
 
@@ -452,6 +417,134 @@ if (typeof document !== 'undefined') (function(){
   }
   document.getElementById('tabToday').onclick = ()=> showView('today');
   document.getElementById('tabProgress').onclick = ()=> showView('progress');
+
+  // ---- Campaign pen trace: one ink line over 92 days of chart paper. ----
+  const W_N = 92, W_W = 326, W_STEP = W_W/W_N, W_BASE = 80, W_LVL = 28;
+  const wx = i => i*W_STEP + W_STEP/2;
+  const wy = v => W_BASE - v*W_LVL;
+  const dayIdxOf = t => t < L.START ? -1 : Math.min(W_N-1, L.dayCount(L.START, L.clamp(t))-1);
+
+  // Monotone cubic (Fritsch–Carlson): the pen never overshoots the scale.
+  function monoPath(xs, ys){
+    const n = xs.length;
+    let p = 'M'+xs[0].toFixed(1)+' '+ys[0].toFixed(1);
+    if(n === 1) return p;
+    const d = [], m = [];
+    for(let i=0;i<n-1;i++) d.push((ys[i+1]-ys[i])/(xs[i+1]-xs[i]));
+    m[0] = d[0]; m[n-1] = d[n-2];
+    for(let i=1;i<n-1;i++) m[i] = d[i-1]*d[i] <= 0 ? 0 : (d[i-1]+d[i])/2;
+    for(let i=0;i<n-1;i++){
+      if(d[i] === 0){ m[i] = 0; m[i+1] = 0; }
+      else{
+        if(m[i]/d[i] > 3) m[i] = 3*d[i];
+        if(m[i+1]/d[i] > 3) m[i+1] = 3*d[i];
+      }
+    }
+    for(let i=0;i<n-1;i++){
+      const h = xs[i+1]-xs[i];
+      p += ' C'+(xs[i]+h/3).toFixed(1)+' '+(ys[i]+m[i]*h/3).toFixed(1)+' '
+        +(xs[i+1]-h/3).toFixed(1)+' '+(ys[i+1]-m[i+1]*h/3).toFixed(1)+' '
+        +xs[i+1].toFixed(1)+' '+ys[i+1].toFixed(1);
+    }
+    return p;
+  }
+
+  function drawWave(t){
+    const svg = document.getElementById('wave');
+    svg.innerHTML = '';
+    const el = (tag, at)=>{
+      const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for(const k in at) e.setAttribute(k, at[k]);
+      svg.appendChild(e); return e;
+    };
+    // chart paper: rules at 1 and 2, baseline, level figures
+    el('line',{x1:0,y1:wy(2),x2:W_W,y2:wy(2),stroke:'#23211d','stroke-width':1});
+    el('line',{x1:0,y1:wy(1),x2:W_W,y2:wy(1),stroke:'#23211d','stroke-width':1});
+    el('line',{x1:0,y1:W_BASE,x2:W_W,y2:W_BASE,stroke:'#33312c','stroke-width':1});
+    [['2',wy(2)],['1',wy(1)]].forEach(([n,y])=>{
+      const tx = el('text',{x:0,y:y-3,fill:'#55524a','font-size':'7.5',
+        'font-family':'Helvetica Neue,Arial,sans-serif'});
+      tx.textContent = n;
+    });
+    // checkpoint boundaries + medal LEDs (lit at bronze or better so far)
+    L.PERIODS.forEach(P=>{
+      if(L.iso(P[2]) === L.iso(L.END)) return; // finale drawn separately
+      const cx = (L.dayCount(L.START,P[2]))*W_STEP;
+      el('line',{x1:cx,y1:15,x2:cx,y2:86,stroke:'#2e2c28','stroke-width':1});
+      if(t >= P[1]){
+        const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
+        const pp = L.rangePts(state, P[1], pEnd, t);
+        const lit = pp >= Math.round(L.periodMax(P)*.6);
+        el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#4ade80':'#33312c'});
+      }
+    });
+    // week ticks (Mondays)
+    for(let d=new Date(L.START); d<=L.END; d.setDate(d.getDate()+1))
+      if(d.getDay()===1)
+        el('line',{x1:(L.dayCount(L.START,d)-1)*W_STEP,y1:88,x2:(L.dayCount(L.START,d)-1)*W_STEP,y2:91,stroke:'#33312c','stroke-width':1});
+    // the trace: raw daily points, softened with a 1-2-1 kernel so a lone
+    // missed day dips visibly but the pen doesn't slam to the floor
+    const idx = dayIdxOf(t);
+    if(idx >= 0){
+      const v = [];
+      for(let i=0;i<=idx;i++) v.push(L.corePts(L.getDay(state, L.iso(L.addDays(L.START,i)))));
+      const s = v.map((_,i)=>{
+        const a = v[Math.max(0,i-1)], b = v[i], c = v[Math.min(v.length-1,i+1)];
+        return (a + 2*b + c)/4;
+      });
+      const xs = s.map((_,i)=>wx(i)), ys = s.map(q=>wy(q));
+      const d = monoPath(xs, ys);
+      if(s.length > 1)
+        el('path',{d: d+' L'+xs[xs.length-1].toFixed(1)+' '+W_BASE+' L'+xs[0].toFixed(1)+' '+W_BASE+' Z',
+          fill:'rgba(232,226,212,.06)', stroke:'none'});
+      el('path',{d, fill:'none', stroke:'#e8e2d4','stroke-width':1.4,
+        'stroke-linejoin':'round','stroke-linecap':'round'});
+      // margin dots: gym below, drink above
+      for(let i=0;i<=idx;i++){
+        const r = L.getDay(state, L.iso(L.addDays(L.START,i)));
+        if(r.g) el('circle',{cx:wx(i),cy:96,r:1.6,fill:'#4ade80'});
+        if(r.d) el('circle',{cx:wx(i),cy:20,r:1.6,fill:'#e0483e'});
+      }
+      // the pen (today)
+      if(t <= L.END){
+        el('line',{x1:wx(idx),y1:15,x2:wx(idx),y2:88,stroke:'#8a857a','stroke-width':.75});
+        el('circle',{cx:wx(idx),cy:ys[ys.length-1],r:2.6,fill:'#e8e2d4'});
+      }
+    }
+    // finale
+    el('line',{x1:W_W-0.75,y1:24,x2:W_W-0.75,y2:84,stroke:'#e0483e','stroke-width':1.5});
+    // months
+    [['Aug',0],['Sep',31],['Oct',61]].forEach(([mm,i])=>{
+      const tx = el('text',{x:i*W_STEP+1,y:110,fill:'#8a857a','font-size':'8.5',
+        'letter-spacing':'1.4','font-family':'Helvetica Neue,Arial,sans-serif'});
+      tx.textContent = mm.toUpperCase();
+    });
+  }
+
+  // Scrub the trace to open a past day: drag shows a date readout, release edits.
+  const waveSvg = document.getElementById('wave');
+  const scrubEl = document.getElementById('scrub');
+  let scrubDay = null;
+  function scrubTo(e){
+    const rect = waveSvg.getBoundingClientRect();
+    const maxIdx = dayIdxOf(today());
+    if(maxIdx < 0) return;
+    scrubDay = Math.max(0, Math.min(maxIdx, Math.floor((e.clientX-rect.left)/rect.width*W_N)));
+    const d = L.addDays(L.START, scrubDay);
+    scrubEl.textContent = fmt(d)+' · '+L.corePts(L.getDay(state, L.iso(d)))+' pts';
+    scrubEl.hidden = false;
+    scrubEl.style.left = Math.max(44, Math.min(rect.width-44, (scrubDay+0.5)/W_N*rect.width))+'px';
+    e.preventDefault();
+  }
+  waveSvg.addEventListener('pointerdown', e=>{ waveSvg.setPointerCapture(e.pointerId); scrubTo(e); });
+  waveSvg.addEventListener('pointermove', e=>{ if(scrubDay!==null) scrubTo(e); });
+  waveSvg.addEventListener('pointerup', ()=>{
+    if(scrubDay===null) return;
+    selected = L.addDays(L.START, scrubDay);
+    scrubDay = null; scrubEl.hidden = true;
+    showView('today'); render();
+  });
+  waveSvg.addEventListener('pointercancel', ()=>{ scrubDay = null; scrubEl.hidden = true; });
 
   // ---- VU meter (scale 0–20, the weekly max; T tick = this week's target) ----
   const ANG = v => -55 + 110 * Math.min(Math.max(v,0),20) / 20;
@@ -518,28 +611,22 @@ if (typeof document !== 'undefined') (function(){
       ' · need <b>'+plan.need+'</b> more · target <b>'+plan.target+'</b> · '+
       plan.weeksLeft+' week'+(plan.weeksLeft===1?'':'s')+' left';
 
-    // checkpoint
+    // campaign trace + current checkpoint line
+    document.getElementById('campDay').textContent =
+      t < L.START ? 'Starts 1 Aug' : 'Day '+L.dayCount(L.START, L.clamp(t))+' of 92';
+    drawWave(t);
     const P = L.periodFor(t), pmax = L.periodMax(P);
     const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
     const ppts = t>=P[1] ? L.rangePts(state, P[1], pEnd, t) : 0;
-    document.getElementById('cpName').textContent = P[0];
-    document.getElementById('cpDays').textContent = fmt(P[1]).slice(4)+' – '+fmt(P[2]).slice(4);
     const left = (t>=P[1] && t<=P[2]) ? L.dayCount(t,P[2])-1 : 0;
-    const bw = document.getElementById('barWrap');
-    bw.querySelectorAll('.mark').forEach(m=>m.remove());
     let next = null;
-    [['Bronze',.6],['Silver',.75],['Gold',.9]].forEach(([name,f],i)=>{
+    [['bronze',.6],['silver',.75],['gold',.9]].forEach(([name,f])=>{
       const th = Math.round(pmax*f);
       if(ppts<th && !next) next = [name,th];
-      const m = document.createElement('div');
-      m.className = 'mark'+(ppts>=th?' hit':'');
-      m.style.left = (f*100)+'%';
-      m.innerHTML = '<span'+(i===1?' style="top:31px"':'')+'>'+name+' '+th+'</span>';
-      bw.appendChild(m);
     });
-    document.getElementById('barFill').style.width = Math.min(100, ppts/pmax*100)+'%';
-    document.getElementById('cpStatus').textContent =
-      ppts+' / '+pmax + (next ? ' · '+(next[1]-ppts)+' to '+next[0].toLowerCase() : ' · gold reached') +
+    document.getElementById('cpStatus').textContent = t < L.START ? '' :
+      P[0]+' · '+ppts+' / '+pmax +
+      (next ? ' · '+(next[1]-ppts)+' to '+next[0] : ' · gold reached') +
       ((t>=P[1] && t<=P[2]) ? ' · '+left+' day'+(left===1?'':'s')+' left' : '');
 
     // stats
@@ -577,31 +664,17 @@ if (typeof document !== 'undefined') (function(){
     const w = L.weekAgg(state, selected, t);
     document.getElementById('dayHint').textContent =
       'Week so far: '+w.drinks+'/2 big drink days · '+w.tw+'/1 takeaway'+(w.tw===1?'':'s')+' · '+w.gym+'/2 gym.';
+    // one slot, two modes: quick backfill of yesterday, or return to today
     const back = document.getElementById('backToday');
-    back.hidden = L.iso(L.clamp(t))===k;
-    back.onclick = ()=>{ selected = L.clamp(today()); render(); };
-
-    // grid
-    const grid = document.getElementById('grid');
-    grid.innerHTML = '';
-    for(let d=new Date(L.mondayOf(L.START)); d<=L.END; d.setDate(d.getDate()+1)){
-      const cell = document.createElement('button');
-      cell.className = 'cell';
-      if(d < L.START){ cell.disabled = true; cell.style.visibility='hidden'; grid.appendChild(cell); continue; }
-      const dk = L.iso(d), r = L.getDay(state,dk), pts = L.corePts(r);
-      if(pts>0) cell.classList.add('p'+pts);
-      if(r.g) cell.classList.add('gym');
-      if(r.d) cell.classList.add('drink');
-      if(CP_ENDS.includes(dk)) cell.classList.add(dk===L.iso(L.END)?'finale':'cp');
-      if(dk===k) cell.classList.add('sel');
-      cell.setAttribute('aria-label', fmt(d)+', '+pts+' points');
-      if(d > t) cell.disabled = true;
-      else {
-        const dd = new Date(d);
-        cell.onclick = ()=>{ selected = dd; showView('today'); render(); };
-      }
-      grid.appendChild(cell);
-    }
+    const isToday = L.iso(L.clamp(t))===k;
+    const yest = L.addDays(L.clamp(t), -1);
+    if(!isToday){
+      back.hidden = false; back.textContent = 'Back to today';
+      back.onclick = ()=>{ selected = L.clamp(today()); render(); };
+    } else if(t >= L.START && yest >= L.START){
+      back.hidden = false; back.textContent = 'Yesterday';
+      back.onclick = ()=>{ selected = yest; render(); };
+    } else back.hidden = true;
   }
 
   // ---- Rescue videos: play inside the app, never link out. Add clips by

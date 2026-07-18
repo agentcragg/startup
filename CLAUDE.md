@@ -36,9 +36,11 @@ used exclusively on his phone, added to home screen.
    small LED dots (never fills); red #e0483e for drink/finale/target
    tick/rescue record-dot. **No skeuomorphic textures** — the discipline
    of the hardware, not its skin. Stark, tiny pops of colour.
-7. **Past days editable via the calendar grid; future days locked.**
-   Tapping a past cell (Progress view) jumps to the Today view with that
-   day loaded in the editor; a "Back to today" button returns.
+7. **Past days editable; future days locked.** Scrub the campaign trace
+   (press–drag–release, floating date readout; clamps at today) to open a
+   past day in the Today editor. The day card's bottom button is
+   "Yesterday" when viewing today (the common backfill case) and "Back to
+   today" when viewing any other day.
 8. **Storage is dual-mode:** window.storage (Claude artifact) if present,
    else localStorage. Key: `slopaoke-campaign-v2`. Single JSON blob.
 
@@ -80,9 +82,14 @@ Two views with a fixed bottom tab bar:
   rejected toggle switches as too easy to flick); rescue button. The
   per-day points digit was dropped (redundancy — the needle is the
   feedback).
-- **Progress**: week detail in digits, checkpoint bar (medal ticks,
-  silver label on a second tier so labels never collide), stats row,
-  photos, calendar, rules card.
+- **Progress**: week detail in digits; the **campaign pen trace**
+  (replaced both the checkpoint bar card AND the calendar grid, 18 Jul
+  2026): one monotone-cubic ink line over 92 days of ruled chart paper —
+  daily points softened by a 1-2-1 kernel so a lone missed day dips
+  without slamming to the floor; gym/drink margin dots; checkpoint
+  hairlines with medal LEDs (lit at ≥bronze); pen dot + hairline = today;
+  red tick = finale; one-line current-checkpoint status underneath. Then
+  stats row, photos, rules card.
 
 ## Photos (on-device only — NEVER in the repo)
 
@@ -143,11 +150,11 @@ keeps working.
 1. ~~**Restructure hierarchy.**~~ DONE — Today/Progress split, see "App
    structure" above. Open question for the user: "Behind pace" renders in
    red; flip to neutral grey if it reads as punishment.
-2. ~~**More visual, fewer numbers.**~~ LARGELY DONE (18 Jul 2026) — hi-fi
-   panel reskin: VU meter, lamp, LED buttons. Calendar-as-story (item 6)
-   is the remaining visual work.
-3. **Kill redundancy.** Weekly target, checkpoint bar, campaign total are
-   three framings of "am I on pace" — collapse.
+2. ~~**More visual, fewer numbers.**~~ DONE (18 Jul 2026) — hi-fi panel
+   reskin: VU meter, lamp, LED buttons, pen trace.
+3. **Kill redundancy.** MOSTLY DONE — checkpoint bar card deleted
+   (absorbed into the trace), per-day points digit deleted. Remaining:
+   "This week" panel vs meter readout overlap, campaign stat vs trace.
 4. **Feedback moments.** Hitting the weekly target, earning a medal, banking
    a bonus should feel like something. Motivation layer candidates: reward
    ladder per checkpoint (user still owes the list of rewards + grand
@@ -155,7 +162,9 @@ keeps working.
    PARTLY DONE: rescue videos shipped (see "Rescue videos"); reward-side
    feedback moments still open.
 5. **Rules card** → collapse or move to an info view.
-6. **Calendar as story, not audit.** 92 grey squares reads as admin.
+6. ~~**Calendar as story, not audit.**~~ DONE (18 Jul 2026) — the pen
+   trace ("trace but less spiky" was the agreed direction; user rejected
+   the bar/sample version as too modern).
 
 ## Style of collaboration the user wants
 
