@@ -67,10 +67,22 @@ used exclusively on his phone, added to home screen.
 ## App structure (post backlog item 1)
 
 Two views with a fixed bottom tab bar:
-- **Today** (default): status word + week bar (the half-second read), then
-  the day editor. That's all.
+- **Today** (default): status word + week bar (the half-second read), the
+  day editor, and the rescue-video button. That's all.
 - **Progress**: week detail in digits, checkpoint bar, stats row, calendar,
   rules card.
+
+## Rescue videos
+
+Motivational clips the user saved from TikTok, for the wobble moment
+(core need is *rescue*, not reward — his call). They play full-screen
+INSIDE the app (`videos/*.mp4` + `VIDEOS` list in index.html, random
+pick, auto-close on end). **Never link out to TikTok** — that ends in
+doomscrolling. Clips stream from network (excluded from the service
+worker: cached full responses break iOS Range requests), so rescue
+needs signal for now. `videos/rescue-01.mp4` is a placeholder test
+pattern awaiting the user's real clips. Repo is public — clips are
+saved from other creators, user is fine with that.
 
 ## Context the app doesn't show but the plan assumes
 
@@ -116,6 +128,8 @@ keeps working.
    a bonus should feel like something. Motivation layer candidates: reward
    ladder per checkpoint (user still owes the list of rewards + grand
    prize), milestone moments, possibly the user's current + goal photos.
+   PARTLY DONE: rescue videos shipped (see "Rescue videos"); reward-side
+   feedback moments still open.
 5. **Rules card** → collapse or move to an info view.
 6. **Calendar as story, not audit.** 92 grey squares reads as admin.
 

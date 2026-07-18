@@ -61,6 +61,20 @@
     border:1px solid var(--line); border-radius:8px; color:var(--text);
     font:inherit; font-size:13px; cursor:pointer;
   }
+  /* rescue video */
+  .rescue{
+    width:100%; padding:13px; background:var(--card);
+    border:1px solid var(--line); border-radius:10px; color:var(--text);
+    font:inherit; cursor:pointer; margin-bottom:12px;
+  }
+  .overlay{position:fixed; inset:0; background:#000; z-index:10; display:flex; flex-direction:column}
+  .overlay[hidden]{display:none}
+  .overlay video{flex:1; min-height:0; width:100%; object-fit:contain; background:#000}
+  .overlay-close{
+    padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom));
+    background:#000; border:none; border-top:1px solid var(--line);
+    color:var(--text); font:inherit; cursor:pointer;
+  }
   /* checkpoint */
   .cp-head{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:14px}
   .bar-wrap{position:relative; height:10px; margin-bottom:24px}
@@ -156,7 +170,14 @@
     <p class="hint" id="dayHint"></p>
     <button class="back" id="backToday" hidden>Back to today</button>
   </div>
+
+  <button class="rescue" id="rescueBtn" hidden>Rescue video</button>
   </main>
+
+  <div class="overlay" id="videoOverlay" hidden>
+    <video id="rescueVid" playsinline preload="none"></video>
+    <button class="overlay-close" id="videoClose">Close</button>
+  </div>
 
   <main id="viewProgress" hidden>
   <div class="card">
@@ -361,6 +382,25 @@ if (typeof document !== 'undefined') (function(){
   }
   document.getElementById('tabToday').onclick = ()=> showView('today');
   document.getElementById('tabProgress').onclick = ()=> showView('progress');
+
+  // Rescue videos: play inside the app, never link out. Add clips by
+  // dropping an mp4 in videos/ and listing it here; picks at random.
+  const VIDEOS = ['videos/rescue-01.mp4'];
+  const overlay = document.getElementById('videoOverlay');
+  const vid = document.getElementById('rescueVid');
+  const rescueBtn = document.getElementById('rescueBtn');
+  rescueBtn.hidden = VIDEOS.length===0;
+  rescueBtn.onclick = ()=>{
+    vid.src = VIDEOS[Math.floor(Math.random()*VIDEOS.length)];
+    overlay.hidden = false;
+    vid.play().catch(()=>{});
+  };
+  function closeVideo(){
+    vid.pause(); vid.removeAttribute('src'); vid.load();
+    overlay.hidden = true;
+  }
+  document.getElementById('videoClose').onclick = closeVideo;
+  vid.onended = closeVideo;
 
   function render(){
     const t = today(), k = L.iso(selected), rec = L.getDay(state,k);

@@ -17,6 +17,9 @@ self.addEventListener('activate', e => {
 // offline always works; a deploy shows up on the visit after it's fetched.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  // Videos stream straight from the network: serving cached full responses
+  // to iOS Safari's Range requests breaks playback.
+  if (new URL(e.request.url).pathname.endsWith('.mp4')) return;
   e.respondWith(
     caches.open(CACHE).then(cache =>
       cache.match(e.request, { ignoreSearch: true }).then(hit => {
