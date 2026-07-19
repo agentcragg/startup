@@ -49,6 +49,11 @@
     transition:transform .9s cubic-bezier(.3,1.6,.4,1)}
   @keyframes ledpulse{0%,100%{opacity:1}50%{opacity:.12}}
   .ledpulse{animation:ledpulse .8s ease-in-out 3}
+  /* meter backlight: soft = held target state, bloom = celebration flash */
+  #glowSoft{opacity:0; transition:opacity 1.4s ease}
+  #glowBloom{opacity:0; transition:opacity 2.4s ease}
+  #glowBloom.on{opacity:1; transition:opacity .35s ease}
+  .trail{pointer-events:none}
   .lamp-row{display:flex; justify-content:space-between; align-items:center; gap:10px}
   .lamp{display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; white-space:nowrap}
   .lamp .dot{width:8px; height:8px; border-radius:50%; background:#33312c; flex:none}
@@ -175,7 +180,16 @@
 
   <main id="viewToday">
   <div class="panel">
-    <svg class="meter" viewBox="0 0 300 132" aria-hidden="true">
+    <svg class="meter" id="meterSvg" viewBox="0 0 300 132" aria-hidden="true">
+      <defs>
+        <radialGradient id="warmGlow" cx="50%" cy="70%" r="65%">
+          <stop offset="0%" stop-color="rgba(255,213,150,.42)"/>
+          <stop offset="55%" stop-color="rgba(255,213,150,.16)"/>
+          <stop offset="100%" stop-color="rgba(255,213,150,0)"/>
+        </radialGradient>
+      </defs>
+      <rect id="glowSoft" x="0" y="0" width="300" height="132" fill="url(#warmGlow)"/>
+      <rect id="glowBloom" x="0" y="0" width="300" height="132" fill="url(#warmGlow)"/>
       <g id="meterTicks"></g>
       <g id="meterLabels"></g>
       <g id="targetG"><line x1="150" y1="33" x2="150" y2="47" stroke="#e0483e" stroke-width="2"/></g>
@@ -440,6 +454,47 @@ if (typeof document !== 'undefined') (function(){
     }, 750);
   }
 
+  // Phosphor afterimage: fading copies of the needle left along its path.
+  let lastTrailAng = null;
+  function spawnTrail(){
+    const m = getComputedStyle(document.getElementById('needleG')).transform;
+    if(!m || m === 'none') return;
+    const v = m.slice(7,-1).split(',');
+    const ang = Math.atan2(+v[1], +v[0]) * 180/Math.PI;
+    if(lastTrailAng !== null && Math.abs(ang-lastTrailAng) < 2) return;
+    lastTrailAng = ang;
+    const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',150); ln.setAttribute('y1',150);
+    ln.setAttribute('x2',150); ln.setAttribute('y2',40);
+    ln.setAttribute('stroke','#e8e2d4'); ln.setAttribute('stroke-width',2);
+    ln.setAttribute('transform','rotate('+ang+' 150 150)');
+    ln.setAttribute('class','trail');
+    ln.style.opacity = '.45';
+    document.getElementById('meterSvg').appendChild(ln);
+    requestAnimationFrame(()=>{ ln.style.transition = 'opacity .6s linear'; ln.style.opacity = '0'; });
+    setTimeout(()=> ln.remove(), 700);
+  }
+
+  // Target-hit celebration: bloom the backlight, double sweep full scale
+  // both ways with a phosphor trail, then settle on the value.
+  function celebrate(toAngle){
+    if(sweeping) return;
+    sweeping = true;
+    const n = document.getElementById('needleG');
+    const bloom = document.getElementById('glowBloom');
+    bloom.classList.add('on');
+    lastTrailAng = null;
+    n.style.transform = 'rotate(55deg)';
+    setTimeout(()=> n.style.transform = 'rotate(-55deg)', 800);
+    setTimeout(()=> n.style.transform = 'rotate('+toAngle+'deg)', 1650);
+    const t0 = performance.now();
+    (function loop(){
+      if(performance.now()-t0 < 2500){ spawnTrail(); requestAnimationFrame(loop); }
+    })();
+    setTimeout(()=> bloom.classList.remove('on'), 2500);
+    setTimeout(()=>{ sweeping = false; render(); }, 2700);
+  }
+
   let curView = 'today';
   function showView(v){
     document.getElementById('viewToday').hidden = v!=='today';
@@ -665,10 +720,12 @@ if (typeof document !== 'undefined') (function(){
     const plan = L.weekPlan(state, t);
     const inCampaign = t>=L.START && t<=L.END;
     const ang = ANG(plan.earned);
-    // target crossed by this very press: power-on sweep
-    if(inCampaign && prevNeed !== null && prevNeed > 0 && plan.need === 0) sweepNeedle(ang);
+    // target crossed by this very press: full celebration
+    if(inCampaign && prevNeed !== null && prevNeed > 0 && plan.need === 0) celebrate(ang);
     else if(!sweeping) document.getElementById('needleG').style.transform = 'rotate('+ang+'deg)';
     prevNeed = inCampaign ? plan.need : null;
+    // backlight: stays warm while the week's target is held
+    document.getElementById('glowSoft').style.opacity = (inCampaign && plan.need===0) ? 1 : 0;
     // week seam: last week's bonuses banked — witnessed once, with a sweep
     const mon = L.mondayOf(t);
     if(inCampaign && mon > L.START){
@@ -678,6 +735,10 @@ if (typeof document !== 'undefined') (function(){
       if(banked > 0 && !seen[bkey]){
         markSeen(bkey);
         sweepNeedle(ang);
+        // last week's backlight is spent: flash it once, let it die
+        const bloom = document.getElementById('glowBloom');
+        bloom.classList.add('on');
+        setTimeout(()=> bloom.classList.remove('on'), 900);
         document.getElementById('readout').innerHTML = '<b>+'+banked+'</b> banked last week';
         bankUntil = Date.now()+3500;
         setTimeout(render, 3600);
