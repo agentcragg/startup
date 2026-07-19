@@ -77,7 +77,12 @@ used exclusively on his phone, added to home screen.
 
 ## App structure (post backlog item 1)
 
-Two views with a fixed bottom tab bar:
+Three views with a fixed bottom tab bar (Today / Progress / Rules).
+All in-app navigation goes through the History API — view switches,
+opening a past day, and both overlays push history entries; overlay
+Close buttons and video-ended call history.back(). This makes the
+Android back gesture unwind the app instead of exiting it (user's
+explicit requirement). The >30-min staleness snap does replaceState.
 - **Today** (default): VU meter (needle = points earned this week on a
   fixed 0–20 scale, sprung CSS transition; ghost needle = earned+pending;
   red tick = weekly target) with indicator lamp (paceStatus) + small
@@ -92,8 +97,9 @@ Two views with a fixed bottom tab bar:
   without slamming to the floor; gym/drink margin dots; checkpoint
   hairlines with medal LEDs (lit at ≥bronze); pen dot + hairline = today;
   red tick = finale; one-line current-checkpoint status underneath. Then
-  stats row (Campaign / Log streak / Gym total), photos, and a quiet
-  "Rules" link to a separate rules view.
+  stats row (Campaign / Log streak / Gym total) and photos.
+- **Rules** (own tab, 19 Jul 2026 — was briefly a link under Progress):
+  the user's why-statement, then the spec sheet.
 - Redundancy trims (18 Jul 2026): "This week" panel deleted (the meter
   says it all), "Gym wk" tile deleted, day-card budget line shows only
   once something is reported that week (clean week = no line). The
@@ -175,8 +181,7 @@ keeps working.
    one reward per checkpoint unlocked at bronze (agreed: bronze, not
    higher — unreachable rewards are punishment), grand prize at 182,
    possibly sealed-until-unlocked. Blocked on the user's list.
-5. ~~**Rules card**~~ DONE — own view behind a quiet "Rules" link at the
-   bottom of Progress. Copy: the user's why-statement (serif italic
+5. ~~**Rules card**~~ DONE — own bottom tab. Copy: the user's why-statement (serif italic
    preamble), then a spec sheet (WIN / DAILY / REPORTING / WEEKLY BONUS /
    GYM / CHECKPOINTS) in plain sentences — includes the win line and the
    empty-week-no-bonus rule, which the old card omitted.

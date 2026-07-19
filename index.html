@@ -101,13 +101,6 @@
   }
   .rescue .rec{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 6px var(--red-glow)}
 
-  /* rules page */
-  .rules-link{
-    display:block; margin:2px auto 14px; padding:8px 16px;
-    background:none; border:none; color:var(--ink-dim);
-    font:inherit; font-size:10px; font-weight:600; cursor:pointer;
-  }
-
   /* campaign pen trace */
   .wave-wrap{position:relative}
   #wave{display:block; width:100%; touch-action:none}
@@ -248,7 +241,6 @@
     <input type="file" id="photoFile" accept="image/*" hidden>
   </div>
 
-  <button class="rules-link caps" id="rulesLink">Rules</button>
   </main>
 
   <main id="viewRules" hidden>
@@ -276,7 +268,6 @@
       <dd>Every fortnight. Bronze at 60%, silver at 75%, gold at 90%.</dd>
     </dl>
   </div>
-  <button class="back caps" id="rulesBack">Back</button>
   </main>
 
   <div class="overlay" id="videoOverlay" hidden>
@@ -296,6 +287,7 @@
   <nav class="tabs">
     <button id="tabToday" class="on">Today</button>
     <button id="tabProgress">Progress</button>
+    <button id="tabRules">Rules</button>
   </nav>
 
 <script>
@@ -448,26 +440,50 @@ if (typeof document !== 'undefined') (function(){
     }, 750);
   }
 
+  let curView = 'today';
   function showView(v){
     document.getElementById('viewToday').hidden = v!=='today';
     document.getElementById('viewProgress').hidden = v!=='progress';
     document.getElementById('viewRules').hidden = v!=='rules';
     document.getElementById('tabToday').className = v==='today' ? 'on' : '';
-    document.getElementById('tabProgress').className = (v==='progress'||v==='rules') ? 'on' : '';
+    document.getElementById('tabProgress').className = v==='progress' ? 'on' : '';
+    document.getElementById('tabRules').className = v==='rules' ? 'on' : '';
+    curView = v;
   }
-  document.getElementById('tabToday').onclick = ()=> showView('today');
-  // render after switching: first-sight moments (medal pulse) need a draw
-  // while the view is actually visible
-  document.getElementById('tabProgress').onclick = ()=>{ showView('progress'); render(); };
-  document.getElementById('rulesLink').onclick = ()=> showView('rules');
-  document.getElementById('rulesBack').onclick = ()=> showView('progress');
+
+  // In-app navigation goes through the History API so the Android back
+  // gesture unwinds views/overlays instead of exiting the app.
+  // State: {v: view, sel: iso of edited day (null = today), ov: open overlay}
+  function parseIso(s){ const p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function uiState(){
+    const sel = L.iso(selected)===L.iso(L.clamp(today())) ? null : L.iso(selected);
+    return {v:curView, sel};
+  }
+  function applyState(s){
+    s = s || {v:'today'};
+    if(s.ov !== 'video') closeVideoRaw();
+    if(s.ov !== 'photo') closePhotoRaw();
+    selected = s.sel ? L.clamp(parseIso(s.sel)) : L.clamp(today());
+    showView(s.v || 'today');
+    render();
+  }
+  function navTo(s){ history.pushState(s, ''); applyState(s); }
+  window.addEventListener('popstate', e => applyState(e.state));
+  history.replaceState({v:'today'}, '');
+
+  document.getElementById('tabToday').onclick = ()=> navTo({v:'today'});
+  document.getElementById('tabProgress').onclick = ()=> navTo({v:'progress'});
+  document.getElementById('tabRules').onclick = ()=> navTo({v:'rules'});
 
   // Backfill-staleness trap: the PWA can sit suspended on an edited past
   // day for hours. After a long background gap, snap back to today.
   let hiddenAt = 0;
   document.addEventListener('visibilitychange', ()=>{
     if(document.visibilityState === 'hidden'){ hiddenAt = Date.now(); return; }
-    if(hiddenAt && Date.now()-hiddenAt > 30*60*1000) selected = L.clamp(today());
+    if(hiddenAt && Date.now()-hiddenAt > 30*60*1000){
+      selected = L.clamp(today());
+      history.replaceState({v:curView}, '');
+    }
     render(); // the date may also have rolled over while hidden
   });
 
@@ -599,9 +615,9 @@ if (typeof document !== 'undefined') (function(){
   waveSvg.addEventListener('pointermove', e=>{ if(scrubDay!==null) scrubTo(e); });
   waveSvg.addEventListener('pointerup', ()=>{
     if(scrubDay===null) return;
-    selected = L.addDays(L.START, scrubDay);
+    const d = L.addDays(L.START, scrubDay);
     scrubDay = null; scrubEl.hidden = true;
-    showView('today'); render();
+    navTo({v:'today', sel:L.iso(d)});
   });
   waveSvg.addEventListener('pointercancel', ()=>{ scrubDay = null; scrubEl.hidden = true; });
 
@@ -748,10 +764,10 @@ if (typeof document !== 'undefined') (function(){
     const yest = L.addDays(L.clamp(t), -1);
     if(!isToday){
       back.hidden = false; back.textContent = 'Back to today';
-      back.onclick = ()=>{ selected = L.clamp(today()); render(); };
+      back.onclick = ()=> navTo({v:'today'});
     } else if(t >= L.START && yest >= L.START){
       back.hidden = false; back.textContent = 'Yesterday';
-      back.onclick = ()=>{ selected = yest; render(); };
+      back.onclick = ()=> navTo({v:'today', sel:L.iso(yest)});
     } else back.hidden = true;
   }
 
@@ -764,16 +780,18 @@ if (typeof document !== 'undefined') (function(){
   const rescueBtn = document.getElementById('rescueBtn');
   rescueBtn.hidden = VIDEOS.length===0;
   rescueBtn.onclick = ()=>{
+    history.pushState(Object.assign(uiState(), {ov:'video'}), '');
     vid.src = VIDEOS[Math.floor(Math.random()*VIDEOS.length)];
     overlay.hidden = false;
     vid.play().catch(()=>{});
   };
-  function closeVideo(){
+  function closeVideoRaw(){
+    if(overlay.hidden) return;
     vid.pause(); vid.removeAttribute('src'); vid.load();
     overlay.hidden = true;
   }
-  document.getElementById('videoClose').onclick = closeVideo;
-  vid.onended = closeVideo;
+  document.getElementById('videoClose').onclick = ()=> history.back();
+  vid.onended = ()=> history.back();
 
   // ---- Photos: goal + monthly mirror shots. Stored ON DEVICE ONLY
   // (IndexedDB) — the repo and site are public, photos must never leave
@@ -836,6 +854,7 @@ if (typeof document !== 'undefined') (function(){
       b.innerHTML = '<img alt=""><div class="cap">'+p.label+'</div>';
       b.querySelector('img').src = u;
       b.onclick = ()=>{
+        history.pushState(Object.assign(uiState(), {ov:'photo'}), '');
         viewing = p;
         document.getElementById('photoCap').textContent = p.label;
         photoFull.src = URL.createObjectURL(p.blob);
@@ -874,17 +893,18 @@ if (typeof document !== 'undefined') (function(){
       .then(loadPhotos)
       .catch(e => console.error('photo save failed', e));
   };
-  function closePhoto(){
+  function closePhotoRaw(){
+    if(photoOverlay.hidden) return;
     if(photoFull.src) URL.revokeObjectURL(photoFull.src);
     photoFull.removeAttribute('src');
     photoOverlay.hidden = true;
     viewing = null;
   }
-  document.getElementById('photoClose').onclick = closePhoto;
+  document.getElementById('photoClose').onclick = ()=> history.back();
   document.getElementById('photoDelete').onclick = ()=>{
     if(!viewing) return;
     if(!confirm('Delete this photo?')) return;
-    idbWrite(st => st.delete(viewing.key)).then(()=>{ closePhoto(); loadPhotos(); });
+    idbWrite(st => st.delete(viewing.key)).then(()=>{ loadPhotos(); history.back(); });
   };
   loadPhotos();
 
