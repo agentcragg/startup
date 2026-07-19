@@ -82,14 +82,22 @@ Two views with a fixed bottom tab bar:
   rejected toggle switches as too easy to flick); rescue button. The
   per-day points digit was dropped (redundancy — the needle is the
   feedback).
-- **Progress**: week detail in digits; the **campaign pen trace**
+- **Progress**: the **campaign pen trace**
   (replaced both the checkpoint bar card AND the calendar grid, 18 Jul
   2026): one monotone-cubic ink line over 92 days of ruled chart paper —
   daily points softened by a 1-2-1 kernel so a lone missed day dips
   without slamming to the floor; gym/drink margin dots; checkpoint
   hairlines with medal LEDs (lit at ≥bronze); pen dot + hairline = today;
   red tick = finale; one-line current-checkpoint status underneath. Then
-  stats row, photos, rules card.
+  stats row (Campaign / Log streak / Gym total), photos, and a quiet
+  "Rules" link to a separate rules view.
+- Redundancy trims (18 Jul 2026): "This week" panel deleted (the meter
+  says it all), "Gym wk" tile deleted, day-card budget line shows only
+  once something is reported that week (clean week = no line). The
+  budget line is the ONE home for weekly allowances.
+- Staleness guard: after >30 min backgrounded, the app snaps the editor
+  back to today (prevents evening taps landing on a morning-backfilled
+  yesterday). Short gaps keep the editing state.
 
 ## Photos (on-device only — NEVER in the repo)
 
@@ -152,16 +160,17 @@ keeps working.
    red; flip to neutral grey if it reads as punishment.
 2. ~~**More visual, fewer numbers.**~~ DONE (18 Jul 2026) — hi-fi panel
    reskin: VU meter, lamp, LED buttons, pen trace.
-3. **Kill redundancy.** MOSTLY DONE — checkpoint bar card deleted
-   (absorbed into the trace), per-day points digit deleted. Remaining:
-   "This week" panel vs meter readout overlap, campaign stat vs trace.
+3. ~~**Kill redundancy.**~~ DONE — checkpoint bar card, per-day points
+   digit, "This week" panel and "Gym wk" tile all deleted; budget line
+   contextual. Meter readout digits kept deliberately (labelled dials).
 4. **Feedback moments.** Hitting the weekly target, earning a medal, banking
    a bonus should feel like something. Motivation layer candidates: reward
    ladder per checkpoint (user still owes the list of rewards + grand
    prize), milestone moments, possibly the user's current + goal photos.
    PARTLY DONE: rescue videos shipped (see "Rescue videos"); reward-side
    feedback moments still open.
-5. **Rules card** → collapse or move to an info view.
+5. ~~**Rules card**~~ DONE — own view behind a quiet "Rules" link at the
+   bottom of Progress. Copy rewrite discussion pending.
 6. ~~**Calendar as story, not audit.**~~ DONE (18 Jul 2026) — the pen
    trace ("trace but less spiky" was the agreed direction; user rejected
    the bar/sample version as too modern).

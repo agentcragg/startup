@@ -99,9 +99,12 @@
   }
   .rescue .rec{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 6px var(--red-glow)}
 
-  /* progress: week detail */
-  .detail{font-size:12.5px; color:var(--ink-dim); font-variant-numeric:tabular-nums; letter-spacing:.03em}
-  .detail b{color:var(--ink); font-weight:700}
+  /* rules page */
+  .rules-link{
+    display:block; margin:2px auto 14px; padding:8px 16px;
+    background:none; border:none; color:var(--ink-dim);
+    font:inherit; font-size:10px; font-weight:600; cursor:pointer;
+  }
 
   /* campaign pen trace */
   .wave-wrap{position:relative}
@@ -209,11 +212,6 @@
 
   <main id="viewProgress" hidden>
   <div class="panel">
-    <div class="p-head caps">This week</div>
-    <div class="detail" id="weekDetail"></div>
-  </div>
-
-  <div class="panel">
     <div class="p-head"><span class="t caps">Campaign</span><span class="d serif" id="campDay"></span></div>
     <div class="wave-wrap">
       <svg id="wave" viewBox="0 0 326 124" aria-label="campaign trace"></svg>
@@ -233,10 +231,6 @@
       <div class="lbl">Log streak</div>
     </div>
     <div class="stat">
-      <div class="num" id="gymWeekNum">0<small>/2</small></div>
-      <div class="lbl">Gym wk</div>
-    </div>
-    <div class="stat">
       <div class="num" id="gymTotalNum">0<small>/26</small></div>
       <div class="lbl">Gym total</div>
       <div class="mini"><div id="gymMini" style="width:0%"></div></div>
@@ -249,7 +243,12 @@
     <input type="file" id="photoFile" accept="image/*" hidden>
   </div>
 
+  <button class="rules-link caps" id="rulesLink">Rules</button>
+  </main>
+
+  <main id="viewRules" hidden>
   <div class="panel">
+    <div class="p-head caps">Rules</div>
     <p class="rules">
       Daily: logged food +1 · protein 130g +1.<br>
       Report as they happen: big drink days (3+ drinks) and takeaways. No points lost, ever.<br>
@@ -258,6 +257,7 @@
       Checkpoints every fortnight: bronze 60% · silver 75% · gold 90%.
     </p>
   </div>
+  <button class="back caps" id="rulesBack">Back</button>
   </main>
 
   <div class="overlay" id="videoOverlay" hidden>
@@ -412,11 +412,23 @@ if (typeof document !== 'undefined') (function(){
   function showView(v){
     document.getElementById('viewToday').hidden = v!=='today';
     document.getElementById('viewProgress').hidden = v!=='progress';
+    document.getElementById('viewRules').hidden = v!=='rules';
     document.getElementById('tabToday').className = v==='today' ? 'on' : '';
-    document.getElementById('tabProgress').className = v==='progress' ? 'on' : '';
+    document.getElementById('tabProgress').className = (v==='progress'||v==='rules') ? 'on' : '';
   }
   document.getElementById('tabToday').onclick = ()=> showView('today');
   document.getElementById('tabProgress').onclick = ()=> showView('progress');
+  document.getElementById('rulesLink').onclick = ()=> showView('rules');
+  document.getElementById('rulesBack').onclick = ()=> showView('progress');
+
+  // Backfill-staleness trap: the PWA can sit suspended on an edited past
+  // day for hours. After a long background gap, snap back to today.
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden'){ hiddenAt = Date.now(); return; }
+    if(hiddenAt && Date.now()-hiddenAt > 30*60*1000) selected = L.clamp(today());
+    render(); // the date may also have rolled over while hidden
+  });
 
   // ---- Campaign pen trace: one ink line over 92 days of chart paper. ----
   const W_N = 92, W_W = 326, W_STEP = W_W/W_N, W_BASE = 80, W_LVL = 28;
@@ -605,12 +617,6 @@ if (typeof document !== 'undefined') (function(){
     document.getElementById('readout').innerHTML =
       '<b>'+plan.earned+'</b> / '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' pending' : '');
 
-    // progress view: week detail in digits
-    document.getElementById('weekDetail').innerHTML =
-      '<b>'+plan.earned+'</b> earned'+(plan.pending?' · <b>+'+plan.pending+'</b> bonus pending':'')+
-      ' · need <b>'+plan.need+'</b> more · target <b>'+plan.target+'</b> · '+
-      plan.weeksLeft+' week'+(plan.weeksLeft===1?'':'s')+' left';
-
     // campaign trace + current checkpoint line
     document.getElementById('campDay').textContent =
       t < L.START ? 'Starts 1 Aug' : 'Day '+L.dayCount(L.START, L.clamp(t))+' of 92';
@@ -634,7 +640,6 @@ if (typeof document !== 'undefined') (function(){
     document.getElementById('totalNum').innerHTML = total+'<small>/182</small>';
     document.getElementById('totalMini').style.width = Math.min(100, total/L.WIN*100)+'%';
     document.getElementById('streakNum').textContent = L.streak(state, t);
-    document.getElementById('gymWeekNum').innerHTML = L.weekAgg(state, L.clamp(t), t).gym+'<small>/2</small>';
     const gt = L.gymTotal(state);
     document.getElementById('gymTotalNum').innerHTML = gt+'<small>/26</small>';
     document.getElementById('gymMini').style.width = Math.min(100, gt/26*100)+'%';
@@ -661,9 +666,15 @@ if (typeof document !== 'undefined') (function(){
     tp.className = 'hw-btn'+((rec.t||0)>0?' on-r':'');
     document.getElementById('twN').textContent = rec.t||0;
     tp.onclick = ()=> upd(k, r => r.t = ((r.t||0)+1)%3);
+    // budgets appear only once something is reported this week
     const w = L.weekAgg(state, selected, t);
-    document.getElementById('dayHint').textContent =
-      'Week so far: '+w.drinks+'/2 big drink days · '+w.tw+'/1 takeaway'+(w.tw===1?'':'s')+' · '+w.gym+'/2 gym.';
+    const spent = [];
+    if(w.drinks) spent.push(w.drinks+'/2 big drink days');
+    if(w.tw) spent.push(w.tw+'/1 takeaway'+(w.tw===1?'':'s'));
+    if(w.gym) spent.push(w.gym+'/2 gym');
+    const hintEl = document.getElementById('dayHint');
+    hintEl.textContent = spent.length ? 'Week so far: '+spent.join(' · ')+'.' : '';
+    hintEl.style.display = spent.length ? '' : 'none';
     // one slot, two modes: quick backfill of yesterday, or return to today
     const back = document.getElementById('backToday');
     const isToday = L.iso(L.clamp(t))===k;
