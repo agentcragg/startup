@@ -47,6 +47,8 @@
   .meter{display:block; width:100%}
   #needleG,#ghostG{transform-box:view-box; transform-origin:150px 150px;
     transition:transform .9s cubic-bezier(.3,1.6,.4,1)}
+  @keyframes ledpulse{0%,100%{opacity:1}50%{opacity:.12}}
+  .ledpulse{animation:ledpulse .8s ease-in-out 3}
   .lamp-row{display:flex; justify-content:space-between; align-items:center; gap:10px}
   .lamp{display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; white-space:nowrap}
   .lamp .dot{width:8px; height:8px; border-radius:50%; background:#33312c; flex:none}
@@ -426,6 +428,26 @@ if (typeof document !== 'undefined') (function(){
 
   function upd(k, fn){ const r = L.getDay(state,k); fn(r); state.days[k]=r; save(); render(); }
 
+  // One-time feedback moments: remember what has already been witnessed.
+  let seen = {};
+  try{ seen = JSON.parse(localStorage.getItem('slopaoke-seen-v1')) || {}; }catch(e){}
+  function markSeen(key){
+    seen[key] = 1;
+    try{ localStorage.setItem('slopaoke-seen-v1', JSON.stringify(seen)); }catch(e){}
+  }
+
+  // Power-on flourish: needle sweeps full scale, then settles on the value.
+  let sweeping = false, prevNeed = null, bankUntil = 0;
+  function sweepNeedle(toAngle){
+    if(sweeping) return;
+    sweeping = true;
+    document.getElementById('needleG').style.transform = 'rotate(55deg)';
+    setTimeout(()=>{
+      document.getElementById('needleG').style.transform = 'rotate('+toAngle+'deg)';
+      sweeping = false;
+    }, 750);
+  }
+
   function showView(v){
     document.getElementById('viewToday').hidden = v!=='today';
     document.getElementById('viewProgress').hidden = v!=='progress';
@@ -434,7 +456,9 @@ if (typeof document !== 'undefined') (function(){
     document.getElementById('tabProgress').className = (v==='progress'||v==='rules') ? 'on' : '';
   }
   document.getElementById('tabToday').onclick = ()=> showView('today');
-  document.getElementById('tabProgress').onclick = ()=> showView('progress');
+  // render after switching: first-sight moments (medal pulse) need a draw
+  // while the view is actually visible
+  document.getElementById('tabProgress').onclick = ()=>{ showView('progress'); render(); };
   document.getElementById('rulesLink').onclick = ()=> showView('rules');
   document.getElementById('rulesBack').onclick = ()=> showView('progress');
 
@@ -504,7 +528,13 @@ if (typeof document !== 'undefined') (function(){
         const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
         const pp = L.rangePts(state, P[1], pEnd, t);
         const lit = pp >= Math.round(L.periodMax(P)*.6);
-        el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#4ade80':'#33312c'});
+        const led = el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#4ade80':'#33312c'});
+        // first sight of a fresh medal: pulse, then it's just lit
+        const mkey = 'medal-'+P[0];
+        if(lit && !seen[mkey] && !document.getElementById('viewProgress').hidden){
+          led.setAttribute('class','ledpulse');
+          markSeen(mkey);
+        }
       }
     });
     // week ticks (Mondays)
@@ -617,7 +647,26 @@ if (typeof document !== 'undefined') (function(){
 
     // meter + lamp
     const plan = L.weekPlan(state, t);
-    document.getElementById('needleG').style.transform = 'rotate('+ANG(plan.earned)+'deg)';
+    const inCampaign = t>=L.START && t<=L.END;
+    const ang = ANG(plan.earned);
+    // target crossed by this very press: power-on sweep
+    if(inCampaign && prevNeed !== null && prevNeed > 0 && plan.need === 0) sweepNeedle(ang);
+    else if(!sweeping) document.getElementById('needleG').style.transform = 'rotate('+ang+'deg)';
+    prevNeed = inCampaign ? plan.need : null;
+    // week seam: last week's bonuses banked — witnessed once, with a sweep
+    const mon = L.mondayOf(t);
+    if(inCampaign && mon > L.START){
+      const lastW = L.weekAgg(state, L.addDays(mon,-7), t);
+      const banked = lastW.drinkBonus + lastW.twBonus;
+      const bkey = 'bank-'+L.iso(mon);
+      if(banked > 0 && !seen[bkey]){
+        markSeen(bkey);
+        sweepNeedle(ang);
+        document.getElementById('readout').innerHTML = '<b>+'+banked+'</b> banked last week';
+        bankUntil = Date.now()+3500;
+        setTimeout(render, 3600);
+      }
+    }
     const ghost = document.getElementById('ghostG');
     ghost.style.display = plan.pending ? '' : 'none';
     ghost.style.transform = 'rotate('+ANG(plan.earned+plan.pending)+'deg)';
@@ -631,8 +680,9 @@ if (typeof document !== 'undefined') (function(){
       lamp.className = 'lamp caps ' + (ps==='behind' ? 'bad' : 'good');
       lbl.textContent = ps==='hit' ? 'Target hit' : ps==='ontrack' ? 'On track' : 'Behind pace';
     }
-    document.getElementById('readout').innerHTML =
-      '<b>'+plan.earned+'</b> / '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' pending' : '');
+    if(Date.now() >= bankUntil)
+      document.getElementById('readout').innerHTML =
+        '<b>'+plan.earned+'</b> / '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' pending' : '');
 
     // campaign trace + current checkpoint line
     document.getElementById('campDay').textContent =

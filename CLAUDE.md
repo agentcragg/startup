@@ -166,12 +166,15 @@ keeps working.
 3. ~~**Kill redundancy.**~~ DONE — checkpoint bar card, per-day points
    digit, "This week" panel and "Gym wk" tile all deleted; budget line
    contextual. Meter readout digits kept deliberately (labelled dials).
-4. **Feedback moments.** Hitting the weekly target, earning a medal, banking
-   a bonus should feel like something. Motivation layer candidates: reward
-   ladder per checkpoint (user still owes the list of rewards + grand
-   prize), milestone moments, possibly the user's current + goal photos.
-   PARTLY DONE: rescue videos shipped (see "Rescue videos"); reward-side
-   feedback moments still open.
+4. **Feedback moments.** MOSTLY DONE. Rescue videos shipped (see "Rescue
+   videos"). Moments layer shipped (19 Jul 2026), all one-time-witnessed
+   via localStorage key `slopaoke-seen-v1`: target-hit needle power-sweep
+   (fires on the crossing press only), medal LED pulse on first Progress
+   view after earning, Monday banking ceremony (sweep + "+N banked last
+   week" readout for 3.5s, keyed per week). REMAINING: the reward ladder —
+   one reward per checkpoint unlocked at bronze (agreed: bronze, not
+   higher — unreachable rewards are punishment), grand prize at 182,
+   possibly sealed-until-unlocked. Blocked on the user's list.
 5. ~~**Rules card**~~ DONE — own view behind a quiet "Rules" link at the
    bottom of Progress. Copy: the user's why-statement (serif italic
    preamble), then a spec sheet (WIN / DAILY / REPORTING / WEEKLY BONUS /
