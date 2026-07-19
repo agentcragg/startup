@@ -104,6 +104,23 @@
     font:inherit; font-size:11px; font-weight:600; cursor:pointer;
   }
 
+  /* gym strip: the other track's instrument — sessions, never points */
+  .gymstrip{display:flex; align-items:center; gap:10px; padding:12px 14px}
+  .gs-label{font-size:11px; font-weight:700; color:var(--ink-dim)}
+  .gs-leds{display:flex; gap:5px}
+  .gs-leds .led{width:6px; height:6px; border-radius:50%; background:#33312c; display:block}
+  .gs-leds .led[hidden]{display:none}
+  .gs-leds .led.on{background:var(--led); box-shadow:0 0 5px var(--led-glow)}
+  .gs-streak{flex:1; text-align:right; font-size:9.5px; color:var(--ink-dim)}
+  .odo{display:flex; gap:3px}
+  .wheel{height:20px; width:15px; overflow:hidden; background:var(--well); border:1px solid var(--line); border-radius:3px}
+  .wheel .col{display:block; transition:transform .65s cubic-bezier(.35,1.3,.5,1)}
+  .wheel .col span{
+    display:block; height:20px; line-height:20px; font-size:12px; font-weight:700;
+    color:var(--ink); text-align:center; font-variant-numeric:tabular-nums;
+  }
+  .gs-max{font-size:10px; color:var(--ink-dim)}
+
   /* rescue */
   .rescue{
     width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
@@ -219,6 +236,14 @@
     <button class="back caps" id="backToday" hidden>Back to today</button>
   </div>
 
+  <div class="panel gymstrip">
+    <span class="gs-label caps">Gym</span>
+    <span class="gs-leds" id="gymLeds"><span class="led"></span><span class="led"></span><span class="led all26" hidden></span></span>
+    <span class="gs-streak caps" id="gymStreak"></span>
+    <span class="odo" id="odo"><span class="wheel"><span class="col" id="odoT"></span></span><span class="wheel"><span class="col" id="odoO"></span></span></span>
+    <span class="gs-max caps">/ 26</span>
+  </div>
+
   <button class="rescue caps" id="rescueBtn" hidden><span class="rec"></span>Rescue video</button>
   </main>
 
@@ -241,11 +266,6 @@
     <div class="stat">
       <div class="num" id="streakNum">0</div>
       <div class="lbl">Log streak</div>
-    </div>
-    <div class="stat">
-      <div class="num" id="gymTotalNum">0<small>/26</small></div>
-      <div class="lbl">Gym total</div>
-      <div class="mini"><div id="gymMini" style="width:0%"></div></div>
     </div>
   </div>
 
@@ -369,6 +389,21 @@ const Logic = (function(){
     return n;
   }
 
+  // Gym streak: consecutive weeks with 2+ sessions. The current week joins
+  // the count as soon as it reaches 2; until then it doesn't break anything.
+  function gymWeekStreak(state, todayDate){
+    if(todayDate < START) return 0;
+    const t = clamp(todayDate);
+    let mon = mondayOf(t), s = 0;
+    if(weekAgg(state, mon, todayDate).gym >= 2) s++;
+    mon = addDays(mon, -7);
+    while(addDays(mon,6) >= START && weekAgg(state, mon, todayDate).gym >= 2){
+      s++;
+      mon = addDays(mon, -7);
+    }
+    return s;
+  }
+
   // Log streak: consecutive days with food logged (today may be pending).
   function streak(state, todayDate){
     let d = new Date(todayDate);
@@ -416,7 +451,7 @@ const Logic = (function(){
   function periodMax(p){ return Math.round(40 * dayCount(p[1],p[2]) / 14); }
 
   return {START, END, WIN, PERIODS, iso, addDays, dayCount, mondayOf, clamp, getDay,
-          corePts, weekAgg, rangePts, gymTotal, streak, weekPlan, paceStatus, periodFor, periodMax};
+          corePts, weekAgg, rangePts, gymTotal, gymWeekStreak, streak, weekPlan, paceStatus, periodFor, periodMax};
 })();
 if (typeof module !== 'undefined') module.exports = Logic;
 
@@ -444,6 +479,7 @@ if (typeof document !== 'undefined') (function(){
 
   // Power-on flourish: needle sweeps full scale, then settles on the value.
   let sweeping = false, prevNeed = null, bankUntil = 0;
+  let prevGymWeek = null, prevGymTotal = null;
   function sweepNeedle(toAngle){
     if(sweeping) return;
     sweeping = true;
@@ -541,6 +577,47 @@ if (typeof document !== 'undefined') (function(){
     }
     render(); // the date may also have rolled over while hidden
   });
+
+  // ---- Gym odometer: mechanical digit wheels, rolls on every session. ----
+  const WHEEL_H = 20;
+  ['odoT','odoO'].forEach(id=>{
+    const col = document.getElementById(id);
+    for(let i=0;i<=10;i++){ // 0-9 plus a spare 0 for the 9->0 wrap
+      const s = document.createElement('span');
+      s.textContent = i%10;
+      col.appendChild(s);
+    }
+  });
+  function snapWheel(col, d){
+    col.style.transition = 'none';
+    col.style.transform = 'translateY('+(-d*WHEEL_H)+'px)';
+    void col.offsetHeight;
+    col.style.transition = '';
+  }
+  function rollWheel(col, from, to){
+    if(from === to) return;
+    if(from === 9 && to === 0){ // roll forward through the spare 0, then snap
+      col.style.transform = 'translateY('+(-10*WHEEL_H)+'px)';
+      setTimeout(()=> snapWheel(col, 0), 700);
+    } else col.style.transform = 'translateY('+(-to*WHEEL_H)+'px)';
+  }
+  let odoCur = null;
+  function setOdo(n){
+    n = Math.max(0, Math.min(99, n));
+    const wt = document.getElementById('odoT'), wo = document.getElementById('odoO');
+    if(odoCur === null){
+      snapWheel(wt, Math.floor(n/10)); snapWheel(wo, n%10);
+    } else if(n !== odoCur){
+      rollWheel(wt, Math.floor(odoCur/10), Math.floor(n/10));
+      rollWheel(wo, odoCur%10, n%10);
+    }
+    odoCur = n;
+  }
+  function pulseEl(el){
+    el.classList.remove('ledpulse');
+    void el.offsetWidth;
+    el.classList.add('ledpulse');
+  }
 
   // ---- Campaign pen trace: one ink line over 92 days of chart paper. ----
   const W_N = 92, W_W = 326, W_STEP = W_W/W_N, W_BASE = 80, W_LVL = 28;
@@ -779,14 +856,30 @@ if (typeof document !== 'undefined') (function(){
       (next ? ' · '+(next[1]-ppts)+' to '+next[0] : ' · gold reached') +
       ((t>=P[1] && t<=P[2]) ? ' · '+left+' day'+(left===1?'':'s')+' left' : '');
 
+    // gym strip: week LEDs, streak, odometer + its moments
+    const gw = L.weekAgg(state, L.clamp(t), t).gym;
+    const gt = L.gymTotal(state);
+    const leds = document.querySelectorAll('#gymLeds .led');
+    leds[0].className = 'led' + (gw>=1 ? ' on' : '');
+    leds[1].className = 'led' + (gw>=2 ? ' on' : '');
+    leds[2].hidden = gt < 26; // the 26th lights a permanent lamp
+    if(gt >= 26) leds[2].className = 'led all26 on';
+    const gsEl = document.getElementById('gymStreak');
+    const gs = L.gymWeekStreak(state, t);
+    gsEl.textContent = gs > 0 ? gs+' wk'+(gs===1?'':'s')+' at 2/2' : '';
+    setOdo(gt);
+    if(prevGymWeek !== null && prevGymWeek < 2 && gw === 2){
+      pulseEl(leds[0]); pulseEl(leds[1]); pulseEl(gsEl);
+    }
+    if(prevGymTotal !== null && [10,20,26].some(m => prevGymTotal < m && gt >= m))
+      pulseEl(document.getElementById('odo'));
+    prevGymWeek = gw; prevGymTotal = gt;
+
     // stats
     const total = t>=L.START ? L.rangePts(state, L.START, L.clamp(t), t) : 0;
     document.getElementById('totalNum').innerHTML = total+'<small>/182</small>';
     document.getElementById('totalMini').style.width = Math.min(100, total/L.WIN*100)+'%';
     document.getElementById('streakNum').textContent = L.streak(state, t);
-    const gt = L.gymTotal(state);
-    document.getElementById('gymTotalNum').innerHTML = gt+'<small>/26</small>';
-    document.getElementById('gymMini').style.width = Math.min(100, gt/26*100)+'%';
 
     // day editor
     document.getElementById('dayTag').textContent = L.iso(t)===k ? 'Today' : 'Editing';
@@ -810,12 +903,12 @@ if (typeof document !== 'undefined') (function(){
     tp.className = 'hw-btn'+((rec.t||0)>0?' on-r':'');
     document.getElementById('twN').textContent = rec.t||0;
     tp.onclick = ()=> upd(k, r => r.t = ((r.t||0)+1)%3);
-    // budgets appear only once something is reported this week
+    // allowances appear only once something is reported this week
+    // (gym lives on its own strip now, not here)
     const w = L.weekAgg(state, selected, t);
     const spent = [];
     if(w.drinks) spent.push(w.drinks+'/2 big drink days');
     if(w.tw) spent.push(w.tw+'/1 takeaway'+(w.tw===1?'':'s'));
-    if(w.gym) spent.push(w.gym+'/2 gym');
     const hintEl = document.getElementById('dayHint');
     hintEl.textContent = spent.length ? 'Week so far: '+spent.join(' · ')+'.' : '';
     hintEl.style.display = spent.length ? '' : 'none';

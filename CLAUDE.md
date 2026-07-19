@@ -19,7 +19,10 @@ used exclusively on his phone, added to home screen.
 
 1. **Two separate tracks.** Diet discipline = points. Gym = its own plain
    session counter (target 2/week, 26 total). Gym is NEVER converted to
-   points — the user explicitly rejected mixing the two.
+   points — the user explicitly rejected mixing the two, and re-confirmed
+   (19 Jul 2026) after being tempted: the answer to "gym feels
+   under-rewarded" is ceremony in its own currency (see gym strip), never
+   points. Gym milestones MAY gate rewards/grand prize (pending his list).
 2. **No negative points, ever.** Bad days lose bonuses, never subtract.
    Punishment maths creates avoidance; avoidance kills logging.
 3. **Drink days and takeaways are reports, not sins.** Neutral-to-red styling
@@ -70,6 +73,8 @@ used exclusively on his phone, added to home screen.
   bronze 60% / silver 75% / gold 90%.
 - Log streak = consecutive days with `l` (food logged); an unlogged *today*
   doesn't break it.
+- `gymWeekStreak` = consecutive weeks with 2+ gym sessions; the current
+  week joins the count at 2 and never breaks it before then.
 - `paceStatus` = the front-page read: `hit` (week target cleared),
   `ontrack`, or `behind`. Straight-line pace over the week's in-campaign
   days, counting earned + pending; the current day doesn't count against
@@ -87,9 +92,15 @@ explicit requirement). The >30-min staleness snap does replaceState.
   fixed 0–20 scale, sprung CSS transition; ghost needle = earned+pending;
   red tick = weekly target) with indicator lamp (paceStatus) + small
   readout; the day editor (latching push-buttons with LED dots — the user
-  rejected toggle switches as too easy to flick); rescue button. The
-  per-day points digit was dropped (redundancy — the needle is the
-  feedback).
+  rejected toggle switches as too easy to flick); the **gym strip**
+  (19 Jul 2026 — gym's own instrument, sessions never points): two
+  week-LEDs, "N wks at 2/2" streak, mechanical odometer that rolls on
+  every session (9→0 wraps through a spare digit), a third LED that
+  lights permanently at 26. Moments: LEDs+streak pulse on the week's 2nd
+  session; odometer pulses crossing 10/20/26. Then the rescue button.
+  The per-day points digit was dropped (redundancy — the needle is the
+  feedback). The budget line covers drinks/takeaways only — gym left it
+  for the strip.
 - **Progress**: the **campaign pen trace**
   (replaced both the checkpoint bar card AND the calendar grid, 18 Jul
   2026): one monotone-cubic ink line over 92 days of ruled chart paper —
@@ -97,7 +108,8 @@ explicit requirement). The >30-min staleness snap does replaceState.
   without slamming to the floor; gym/drink margin dots; checkpoint
   hairlines with medal LEDs (lit at ≥bronze); pen dot + hairline = today;
   red tick = finale; one-line current-checkpoint status underneath. Then
-  stats row (Campaign / Log streak / Gym total) and photos.
+  stats row (Campaign / Log streak — gym tiles gone, the strip owns gym)
+  and photos.
 - **Rules** (own tab, 19 Jul 2026 — was briefly a link under Progress):
   the user's why-statement, then the spec sheet.
 - Redundancy trims (18 Jul 2026): "This week" panel deleted (the meter

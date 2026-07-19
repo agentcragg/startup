@@ -67,6 +67,20 @@ eq('core 1', L.corePts({l:1,p:0}), 1);
   const days = {'2026-08-01':{...full,g:1},'2026-09-10':{...full,g:1},'2026-10-30':{...full,g:1}};
   eq('gym total 3', L.gymTotal(S(days)), 3);
 }
+// gym week streak: consecutive weeks at 2+
+{
+  eq('gym streak empty', L.gymWeekStreak(S({}), D(8,20)), 0);
+  const days = {
+    '2026-08-04':{...full,g:1},'2026-08-06':{...full,g:1},   // week Aug 3: 2
+    '2026-08-11':{...full,g:1},'2026-08-13':{...full,g:1},   // week Aug 10: 2
+    '2026-08-18':{...full,g:1}                                // week Aug 17: 1 so far
+  };
+  eq('current week at 1 does not break', L.gymWeekStreak(S(days), D(8,19)), 2);
+  const days2 = {...days, '2026-08-20':{...full,g:1}};        // week Aug 17: 2
+  eq('current week joins at 2', L.gymWeekStreak(S(days2), D(8,20)), 3);
+  const gap = {...days2}; delete gap['2026-08-11']; delete gap['2026-08-13'];
+  eq('broken week stops the walk', L.gymWeekStreak(S(gap), D(8,20)), 1);
+}
 // weekPlan: fresh campaign, first Monday
 {
   const p = L.weekPlan(S({}), D(8,1)); // Sat 1 Aug, week of Jul 27
