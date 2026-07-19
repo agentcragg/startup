@@ -26,7 +26,10 @@ used exclusively on his phone, added to home screen.
    is fine, but no shaming copy.
 4. **A "big drink day" = 3+ drinks.** User's own definition.
 5. **No flavour copy / slogans / taglines.** The user hates them ("Points are
-   the contract" got binned). Plain functional language only.
+   the contract" got binned). Plain functional language only. ONE
+   exception (his call, 19 Jul 2026): the rules page opens with his own
+   statement of why, near-verbatim in his words, set in serif italic.
+   Never invent or "improve" motivational copy beyond that.
 6. **No employer branding.** Earlier version used BIFA blue (#2B32C8) because
    the user works there; he hated it. Design language (agreed 18 Jul 2026,
    from his references — 70s hi-fi front panels, 60s French editorial/YSL
@@ -170,7 +173,10 @@ keeps working.
    PARTLY DONE: rescue videos shipped (see "Rescue videos"); reward-side
    feedback moments still open.
 5. ~~**Rules card**~~ DONE — own view behind a quiet "Rules" link at the
-   bottom of Progress. Copy rewrite discussion pending.
+   bottom of Progress. Copy: the user's why-statement (serif italic
+   preamble), then a spec sheet (WIN / DAILY / REPORTING / WEEKLY BONUS /
+   GYM / CHECKPOINTS) in plain sentences — includes the win line and the
+   empty-week-no-bonus rule, which the old card omitted.
 6. ~~**Calendar as story, not audit.**~~ DONE (18 Jul 2026) — the pen
    trace ("trace but less spiky" was the agreed direction; user rejected
    the bar/sample version as too modern).

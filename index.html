@@ -134,7 +134,10 @@
   .shot .ph{width:86px; height:114px; border:1px dashed #3a3833; border-radius:5px;
     display:grid; place-items:center; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim)}
 
-  .rules{font-size:12px; color:var(--ink-dim); line-height:1.8; letter-spacing:.02em}
+  .why{font-size:15.5px; color:var(--ink); line-height:1.75}
+  .spec dt{font-size:10px; font-weight:700; color:var(--ink-dim); margin-top:15px}
+  .spec dt:first-of-type{margin-top:0}
+  .spec dd{font-size:13px; color:var(--ink); line-height:1.6; margin-top:4px}
 
   /* overlays */
   .overlay{position:fixed; inset:0; background:#000; z-index:10; display:flex; flex-direction:column}
@@ -248,14 +251,28 @@
 
   <main id="viewRules" hidden>
   <div class="panel">
+    <p class="why serif">I'm doing this because I want to be healthier, and stronger,
+    and to look better, and to not feel shame when I look in the mirror.
+    I've tried this tens of times since I was 16. This time I'm following
+    through, because I have a plan, and I'm working on it.</p>
+  </div>
+  <div class="panel">
     <div class="p-head caps">Rules</div>
-    <p class="rules">
-      Daily: logged food +1 · protein 130g +1.<br>
-      Report as they happen: big drink days (3+ drinks) and takeaways. No points lost, ever.<br>
-      Week ends with ≤2 big drink days +3 · ≤1 takeaway +3. Max 20/week.<br>
-      Gym is tracked separately — 2/week, 26 total. Not points.<br>
-      Checkpoints every fortnight: bronze 60% · silver 75% · gold 90%.
-    </p>
+    <dl class="spec">
+      <dt class="caps">Win</dt>
+      <dd>182 points by 31 October.</dd>
+      <dt class="caps">Daily</dt>
+      <dd>Log your food: 1 point. Hit 130g protein: 1 point.</dd>
+      <dt class="caps">Reporting</dt>
+      <dd>Mark big drink days (3 or more drinks) and takeaways as they happen. They never cost points.</dd>
+      <dt class="caps">Weekly bonus</dt>
+      <dd>When a week ends: 2 or fewer big drink days, +3. 1 takeaway or fewer, +3.
+        A week with nothing logged earns no bonus. Top score 20 a week.</dd>
+      <dt class="caps">Gym</dt>
+      <dd>Its own count, never points. 2 a week, 26 for the campaign.</dd>
+      <dt class="caps">Checkpoints</dt>
+      <dd>Every fortnight. Bronze at 60%, silver at 75%, gold at 90%.</dd>
+    </dl>
   </div>
   <button class="back caps" id="rulesBack">Back</button>
   </main>
