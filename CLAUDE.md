@@ -91,13 +91,19 @@ explicit requirement). The >30-min staleness snap does replaceState.
 - **Today** (default): VU meter (needle = points earned this week on a
   fixed 0–20 scale, sprung CSS transition; ghost needle = earned+pending;
   red tick = weekly target) with indicator lamp (paceStatus) + small
-  readout; the day editor (latching push-buttons with LED dots — the user
-  rejected toggle switches as too easy to flick); the **gym strip**
-  (19 Jul 2026 — gym's own instrument, sessions never points): two
-  week-LEDs, "N wks at 2/2" streak, mechanical odometer that rolls on
-  every session (9→0 wraps through a spare digit), a third LED that
-  lights permanently at 26. Moments: LEDs+streak pulse on the week's 2nd
-  session; odometer pulses crossing 10/20/26. Then the rescue button.
+  readout; the **gym row on the same panel** (19 Jul 2026 — one
+  dashboard fascia, but sessions never points): two week-LEDs plus a
+  deliberately lesser outlined third dot (3rd session = surplus, never a
+  new benchmark; 4+ adds no dots), "N wks at 2/2" streak, mechanical
+  odometer that rolls on every session (9→0 wraps through a spare
+  digit), a small LED after "/26" lighting permanently at 26. Moments:
+  LEDs+streak pulse on the week's 2nd session, extra dot pulses on the
+  3rd, odometer pulses crossing 10/20/26. Placement is deliberate:
+  counter at top of screen, GYM button mid-screen — the thumb can't
+  cover the roll. All panel text is one size (11px caps); hierarchy via
+  ink vs dim, never font size. Then the day editor (latching
+  push-buttons with LED dots — the user rejected toggle switches as too
+  easy to flick) and the rescue button.
   The per-day points digit was dropped (redundancy — the needle is the
   feedback). The budget line covers drinks/takeaways only — gym left it
   for the strip.
