@@ -36,7 +36,7 @@
 
   .panel{
     background:var(--panel); border:1px solid var(--line); border-radius:6px;
-    padding:16px; margin-bottom:14px;
+    padding:16px; margin-bottom:14px; position:relative;
   }
   .panel .rule{height:1px; background:var(--line); margin:14px -16px}
   .p-head{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:700; margin-bottom:12px}
@@ -49,7 +49,14 @@
     transition:transform .9s cubic-bezier(.3,1.6,.4,1)}
   @keyframes ledpulse{0%,100%{opacity:1}50%{opacity:.12}}
   .ledpulse{animation:ledpulse .8s ease-in-out 3}
-  /* meter backlight: soft = held target state, bloom = celebration flash */
+  /* meter backlight: soft = held target state, bloom = celebration flash.
+     Lives on the panel, not the svg, and fades out before any edge —
+     no hard stop; a little light spills over the rule onto the lamp row. */
+  .backlight{
+    position:absolute; inset:0; border-radius:6px; pointer-events:none;
+    background:radial-gradient(85% 70% at 50% 35%,
+      rgba(255,213,150,.34), rgba(255,213,150,.12) 52%, rgba(255,213,150,0) 76%);
+  }
   #glowSoft{opacity:0; transition:opacity 1.4s ease}
   #glowBloom{opacity:0; transition:opacity 2.4s ease}
   #glowBloom.on{opacity:1; transition:opacity .35s ease}
@@ -180,16 +187,9 @@
 
   <main id="viewToday">
   <div class="panel">
+    <div class="backlight" id="glowSoft"></div>
+    <div class="backlight" id="glowBloom"></div>
     <svg class="meter" id="meterSvg" viewBox="0 0 300 132" aria-hidden="true">
-      <defs>
-        <radialGradient id="warmGlow" cx="50%" cy="70%" r="65%">
-          <stop offset="0%" stop-color="rgba(255,213,150,.42)"/>
-          <stop offset="55%" stop-color="rgba(255,213,150,.16)"/>
-          <stop offset="100%" stop-color="rgba(255,213,150,0)"/>
-        </radialGradient>
-      </defs>
-      <rect id="glowSoft" x="0" y="0" width="300" height="132" fill="url(#warmGlow)"/>
-      <rect id="glowBloom" x="0" y="0" width="300" height="132" fill="url(#warmGlow)"/>
       <g id="meterTicks"></g>
       <g id="meterLabels"></g>
       <g id="targetG"><line x1="150" y1="33" x2="150" y2="47" stroke="#e0483e" stroke-width="2"/></g>
