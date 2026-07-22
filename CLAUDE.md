@@ -151,7 +151,9 @@ Goal photo + monthly mirror shots live in IndexedDB (`slopaoke-photos`)
 on the phone, added via file input from the camera roll, compressed to
 ≤1280px JPEG. Viewer supports swipe left/right through the set (goal
 first, then dated; caption shows n/total; img draggable=false or native
-image-drag eats the pointer events). The repo/site are public, so photos must never be
+image-drag eats the pointer events), and a Goal button that flips any
+progress photo against the goal and Back again (the compare gesture;
+swiping breaks the pairing). The repo/site are public, so photos must never be
 committed or uploaded anywhere. No sync: clearing site data loses them
 (originals remain in camera roll). Goal slot is fixed; dated photos
 append; viewer overlay has delete.
