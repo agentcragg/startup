@@ -560,6 +560,10 @@ if (typeof document !== 'undefined') (function(){
   function celebrate(toAngle){
     if(sweeping) return;
     sweeping = true;
+    // if the crossing press came from backfilling yesterday, lift the
+    // editing dim so the moment lands at full brightness (the closing
+    // render re-applies it)
+    document.querySelector('.dialzone').classList.remove('editing');
     const n = document.getElementById('needleG');
     const bloom = document.getElementById('glowBloom');
     bloom.classList.add('on');
@@ -640,10 +644,21 @@ if (typeof document !== 'undefined') (function(){
   }
   function rollWheel(col, from, to){
     if(from === to) return;
+    // cancel any pending wrap-snap: a new roll supersedes it, and a stale
+    // snap firing later would slam the wheel to 0 regardless of state
+    const wasWrapping = !!col._wrapT;
+    if(wasWrapping){ clearTimeout(col._wrapT); col._wrapT = null; }
     if(from === 9 && to === 0){ // roll forward through the spare 0, then snap
       col.style.transform = 'translateY('+(-10*WHEEL_H)+'px)';
-      setTimeout(()=> snapWheel(col, 0), 700);
+      col._wrapT = setTimeout(()=>{ col._wrapT = null; snapWheel(col, 0); }, 700);
+    } else if(wasWrapping && to !== 9){
+      // resting on the spare 0 and rolling onward: snap to the real 0
+      // first so the wheel continues forward instead of unwinding
+      snapWheel(col, 0);
+      requestAnimationFrame(()=> col.style.transform = 'translateY('+(-to*WHEEL_H)+'px)');
     } else col.style.transform = 'translateY('+(-to*WHEEL_H)+'px)';
+    // (wasWrapping && to === 9 falls through above: from the spare 0 the
+    // direct transform is a one-cell reverse — the correct un-roll)
   }
   let odoCur = null;
   function setOdo(n){
