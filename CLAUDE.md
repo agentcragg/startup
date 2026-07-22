@@ -34,14 +34,22 @@ used exclusively on his phone, added to home screen.
    statement of why, near-verbatim in his words, set in serif italic.
    Never invent or "improve" motivational copy beyond that.
 6. **No employer branding.** Earlier version used BIFA blue (#2B32C8) because
-   the user works there; he hated it. Design language (agreed 18 Jul 2026,
-   from his references — 70s hi-fi front panels, 60s French editorial/YSL
-   Rive Gauche): charcoal (#101010 bg, #181818 panels), cream ink #e8e2d4
-   (paper, not white), letterspaced Helvetica caps + Georgia italic for
-   dates, hairlines and precise alignment. Green #4ade80 exists ONLY as
-   small LED dots (never fills); red #e0483e for drink/finale/target
-   tick/rescue record-dot. **No skeuomorphic textures** — the discipline
-   of the hardware, not its skin. Stark, tiny pops of colour.
+   the user works there; he hated it. Design language v2 (agreed 19 Jul
+   2026 after a reference round — Tigris museum site, SYN diagnostic
+   concept, YSL labels, editorial portfolio lists; the user called the v1
+   hi-fi panels "too skeuomorphic"): **print, don't box.** Near-black
+   warm ground #121110, cream ink #e8e2d4, NO panels/bezels — open
+   composition, hairlines only where meaning demands. Type: Georgia serif
+   mixed-case for the big tappable actions ("Logged food" 24px), Helvetica
+   letterspaced caps for labels, mono for figures/annotations. **Colour is
+   semantic, never decorative:** cream/warm = diet track + its glow;
+   cobalt #3b4eff = gym ONLY (his call — "it's not BIFA blue"); red
+   #e0483e = warnings (drink), finale, target tick, rescue dot, and the
+   N° in the serial tag. Green is RETIRED entirely. The tilted cream
+   serial tag (N° day/92) is the one playful artefact. Solid-fill = on,
+   thin outline = off; the near-silent off state is deliberate (a
+   feature, per user). Cobalt slab loudness is deliberate (gym presence,
+   per user — overruled my hierarchy objection, 19 Jul).
 7. **Past days editable; future days locked.** Scrub the campaign trace
    (press–drag–release, floating date readout; clamps at today) to open a
    past day in the Today editor. The day card's bottom button is
@@ -82,40 +90,42 @@ used exclusively on his phone, added to home screen.
 
 ## App structure (post backlog item 1)
 
-Three views with a fixed bottom tab bar (Today / Progress / Rules).
+Three views with a fixed bottom tab bar (Today / Progress / Rules;
+active tab = underline, so the glowing dot stays unique to the lamp).
 All in-app navigation goes through the History API — view switches,
 opening a past day, and both overlays push history entries; overlay
 Close buttons and video-ended call history.back(). This makes the
 Android back gesture unwind the app instead of exiting it (user's
 explicit requirement). The >30-min staleness snap does replaceState.
-- **Today** (default): VU meter (needle = points earned this week on a
-  fixed 0–20 scale, sprung CSS transition; ghost needle = earned+pending;
-  red tick = weekly target) with indicator lamp (paceStatus) + small
-  readout; the **gym row on the same panel** (19 Jul 2026 — one
-  dashboard fascia, but sessions never points): two week-LEDs plus a
-  deliberately lesser outlined third dot (3rd session = surplus, never a
-  new benchmark; 4+ adds no dots), "N wks at 2/2" streak, mechanical
-  odometer that rolls on every session (9→0 wraps through a spare
-  digit), a small LED after "/26" lighting permanently at 26. Moments:
-  LEDs+streak pulse on the week's 2nd session, extra dot pulses on the
-  3rd, odometer pulses crossing 10/20/26. Placement is deliberate:
-  counter at top of screen, GYM button mid-screen — the thumb can't
-  cover the roll. All panel text is one size (11px caps); hierarchy via
-  ink vs dim, never font size. Then the day editor (latching
-  push-buttons with LED dots — the user rejected toggle switches as too
-  easy to flick) and the rescue button.
+- **Today** (default): the **open dial** — unboxed VU meter (needle =
+  week points, 0–20; faint cream ghost = earned+pending; red tick =
+  target; needles clipped at a ground hairline so they grow from a
+  baseline) with the centred status line beneath (lamp dot + word +
+  mono digits). Backlight glow = light pooling on the page (no box),
+  blooms on target-hit celebration, holds while target held, spent by
+  Monday banking. Then the day section: two **big serif block buttons**
+  (Logged food / Protein — solid cream fill + red mono "+1" when on,
+  thin outline when off), the **cobalt gym slab** (serif "Gym" at the
+  same 24px + day-dot for the edited day; week LEDs + lesser third dot
+  below; odometer wheels + /26 + 26-lamp and streak at right; pressing
+  the slab logs the session — sessions never points), then mini mono
+  buttons: "Big drink · n/2", "Takeaway · n/1" (weekly budgets live ON
+  the buttons; the old budget note line is gone), "● Rescue".
+  "← Yesterday" sits under the serif date in the day header. Gym
+  moments unchanged (2/2 pulse, 3rd-dot pulse, wheel pulses at
+  10/20/26).
   The per-day points digit was dropped (redundancy — the needle is the
   feedback). The budget line covers drinks/takeaways only — gym left it
   for the strip.
 - **Progress**: the **campaign pen trace**
   (replaced both the checkpoint bar card AND the calendar grid, 18 Jul
-  2026): one monotone-cubic ink line over 92 days of ruled chart paper —
-  daily points softened by a 1-2-1 kernel so a lone missed day dips
-  without slamming to the floor; gym/drink margin dots; checkpoint
-  hairlines with medal LEDs (lit at ≥bronze); pen dot + hairline = today;
-  red tick = finale; one-line current-checkpoint status underneath. Then
-  stats row (Campaign / Log streak — gym tiles gone, the strip owns gym)
-  and photos.
+  2026): one monotone-cubic cream ink line over 92 days of ruled chart
+  paper — daily points softened by a 1-2-1 kernel so a lone missed day
+  dips without slamming to the floor; margin dots (gym = cobalt, drink =
+  red); checkpoint hairlines with medal dots (lit cream at ≥bronze); pen
+  dot + hairline = today; red tick = finale; one-line current-checkpoint
+  status underneath (mono caps). Then unboxed stats figures (Campaign /
+  Log streak) and photos. Everything printed on the page, no cards.
 - **Rules** (own tab, 19 Jul 2026 — was briefly a link under Progress):
   the user's why-statement, then the spec sheet.
 - Redundancy trims (18 Jul 2026): "This week" panel deleted (the meter

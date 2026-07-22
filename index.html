@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#101010">
+<meta name="theme-color" content="#121110">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Slopaoke">
@@ -13,10 +13,11 @@
 <title>Slopaoke campaign</title>
 <style>
   :root{
-    --bg:#101010; --panel:#181818; --line:#2e2c28; --well:#101010;
-    --ink:#e8e2d4; --ink-dim:#8a857a; --ink-faint:#55524a;
-    --led:#4ade80; --led-glow:rgba(74,222,128,.75);
-    --red:#e0483e; --red-glow:rgba(224,72,62,.7);
+    --bg:#121110; --well:#0e0d0c; --line:#33302a; --hair:#23211d;
+    --ink:#e8e2d4; --dim:#8f8878; --faint:#565045;
+    --cobalt:#3b4eff; --cobalt-deep:#2330b8; --cobalt-well:#0e1140; --cobalt-pale:#b9c2ff;
+    --red:#e0483e; --red-glow:rgba(224,72,62,.6);
+    --warm:rgba(255,205,140,.65);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
@@ -24,116 +25,122 @@
     font-family:"Helvetica Neue",-apple-system,system-ui,Arial,sans-serif;
     font-size:15px; line-height:1.4;
     max-width:520px; margin:0 auto;
-    padding:22px 16px calc(84px + env(safe-area-inset-bottom));
+    padding:22px 18px calc(84px + env(safe-area-inset-bottom));
     -webkit-font-smoothing:antialiased;
   }
   .caps{letter-spacing:.14em; text-transform:uppercase}
-  .serif{font-family:Georgia,"Times New Roman",serif; font-style:italic; text-transform:none; letter-spacing:0}
+  .serif{font-family:Georgia,"Times New Roman",serif; letter-spacing:0; text-transform:none}
+  .mono{font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace; letter-spacing:.04em}
 
-  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px}
+  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
   header .brand{font-size:14px; font-weight:700}
-  header .dates{font-size:14px; color:var(--ink-dim)}
-
-  .panel{
-    background:var(--panel); border:1px solid var(--line); border-radius:6px;
-    padding:16px; margin-bottom:14px; position:relative;
+  .serialtag{
+    background:var(--ink); color:#171512; border-radius:3px;
+    padding:4px 9px; font-size:10px; font-weight:700;
+    transform:rotate(-2deg); transform-origin:center;
   }
-  .panel .rule{height:1px; background:var(--line); margin:14px -16px}
-  .p-head{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:700; margin-bottom:12px}
-  .p-head .d{font-size:14px; color:var(--ink-dim); font-weight:400}
-  .banner{font-size:13px; color:var(--ink-dim); letter-spacing:.04em}
+  .serialtag b{color:#c03a31; font-weight:700}
 
-  /* meter */
-  .meter{display:block; width:100%}
+  .banner{font-size:12px; color:var(--dim); letter-spacing:.04em; margin-bottom:16px}
+
+  /* ---- the open dial ---- */
+  .dialzone{position:relative; margin:0 -6px}
+  .backlight{position:absolute; inset:-26px -34px -4px -34px; pointer-events:none; border-radius:40px;
+    background:radial-gradient(60% 68% at 50% 40%,
+      rgba(255,205,140,.17), rgba(255,205,140,.055) 48%, rgba(255,205,140,0) 68%)}
+  #glowSoft{opacity:0; transition:opacity 1.4s ease}
+  #glowBloom{opacity:0; transition:opacity 2.4s ease}
+  #glowBloom.on{opacity:1; transition:opacity .35s ease}
+  .meter{display:block; width:100%; position:relative}
   #needleG,#ghostG{transform-box:view-box; transform-origin:150px 150px;
     transition:transform .9s cubic-bezier(.3,1.6,.4,1)}
   @keyframes ledpulse{0%,100%{opacity:1}50%{opacity:.12}}
   .ledpulse{animation:ledpulse .8s ease-in-out 3}
-  /* meter backlight: soft = held target state, bloom = celebration flash.
-     Lives on the panel, not the svg, and fades out before any edge —
-     no hard stop; a little light spills over the rule onto the lamp row. */
-  .backlight{
-    position:absolute; inset:0; border-radius:6px; pointer-events:none;
-    background:radial-gradient(75% 62% at 50% 35%,
-      rgba(255,213,150,.26), rgba(255,213,150,.08) 45%, rgba(255,213,150,0) 64%);
-  }
-  #glowSoft{opacity:0; transition:opacity 1.4s ease}
-  #glowBloom{opacity:0; transition:opacity 2.4s ease}
-  #glowBloom.on{opacity:1; transition:opacity .35s ease}
   .trail{pointer-events:none}
-  .lamp-row{display:flex; justify-content:space-between; align-items:center; gap:10px}
-  .lamp{display:flex; align-items:center; gap:9px; font-size:11px; font-weight:700; white-space:nowrap}
-  .lamp .dot{width:8px; height:8px; border-radius:50%; background:#33312c; flex:none}
-  .lamp.good .dot{background:var(--led); box-shadow:0 0 6px var(--led-glow)}
-  .lamp.bad .dot{background:var(--red); box-shadow:0 0 6px var(--red-glow)}
-  .readout{font-size:11px; color:var(--ink-dim); font-variant-numeric:tabular-nums; letter-spacing:.08em; text-align:right}
-  .readout b{color:var(--ink); font-weight:700}
-  /* gym row: same fascia, own currency. One text size across the panel;
-     hierarchy comes from ink vs dim and weight, not size. */
-  .gym-row{display:flex; align-items:center; gap:10px}
-  .gs-label{font-size:11px; font-weight:700; color:var(--ink-dim)}
-  .gs-leds{display:flex; align-items:center; gap:5px}
-  .gs-leds .led{width:6px; height:6px; border-radius:50%; background:#33312c}
-  .gs-leds .led.on{background:var(--led); box-shadow:0 0 5px var(--led-glow)}
-  .gs-leds .led.extra{width:4px; height:4px; background:none; border:1px solid #3a3833}
-  .gs-leds .led.extra.on{background:var(--led); border-color:var(--led); box-shadow:0 0 4px var(--led-glow)}
-  .gs-streak{flex:1; text-align:right; font-size:11px; color:var(--ink-dim); white-space:nowrap}
-  .odo{display:flex; gap:3px}
-  .wheel{height:26px; width:19px; overflow:hidden; background:var(--well); border:1px solid var(--line); border-radius:3px}
-  .wheel .col{display:block; transition:transform .65s cubic-bezier(.35,1.3,.5,1)}
-  .wheel .col span{
-    display:block; height:26px; line-height:26px; font-size:15px; font-weight:700;
-    color:var(--ink); text-align:center; font-variant-numeric:tabular-nums;
+  .statusline{
+    position:relative; display:flex; justify-content:center; align-items:center;
+    gap:14px; font-size:11px; margin-top:10px;
   }
-  .gs-max{font-size:11px; color:var(--ink-dim)}
-  .led26{width:6px; height:6px; border-radius:50%; background:var(--led); box-shadow:0 0 5px var(--led-glow)}
-  .led26[hidden]{display:none}
+  .statusline .dot{width:8px; height:8px; border-radius:50%; background:#33302a; flex:none}
+  .statusline.good .dot{background:var(--ink); box-shadow:0 0 8px var(--warm)}
+  .statusline.bad .dot{background:var(--red); box-shadow:0 0 7px var(--red-glow)}
+  .statusline .lbl{font-weight:700}
+  .statusline .nums{color:var(--dim); font-variant-numeric:tabular-nums}
+  .statusline .nums b{color:var(--ink); font-weight:700}
 
-  /* day panel */
-  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px}
-  .day-head .t{font-size:12px; font-weight:700}
-  .day-head .d{font-size:15px; color:var(--ink-dim)}
-  .check{
-    display:flex; align-items:center; gap:12px; width:100%;
-    background:var(--well); border:1px solid var(--line); border-radius:5px;
-    padding:14px; margin-bottom:10px; color:var(--ink-dim);
+  /* ---- day section ---- */
+  .day-head{display:flex; justify-content:space-between; align-items:flex-end; margin:30px 0 14px}
+  .day-head .t{font-size:11px; font-weight:700; color:var(--dim)}
+  .day-right{text-align:right}
+  .day-right .d{font-size:15px; color:var(--dim); font-style:italic}
+  .yday{
+    display:inline-block; margin-top:4px; background:none; border:none; padding:2px 0;
+    font-size:10px; color:var(--faint); cursor:pointer;
+    font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace;
+    letter-spacing:.1em; text-transform:uppercase;
+  }
+
+  .blockbtn{
+    display:flex; justify-content:space-between; align-items:center; width:100%;
+    border-radius:4px; padding:18px 20px; margin-bottom:12px;
+    font:inherit; cursor:pointer; text-align:left;
+    background:none; border:1px solid var(--line); color:var(--dim);
+  }
+  .blockbtn:active{transform:translateY(1px)}
+  .blockbtn .t{font-size:24px}
+  .blockbtn .note{font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace}
+  .blockbtn.on{background:var(--ink); border:1px solid var(--ink); color:#171512}
+  .blockbtn.on .note{color:#c03a31}
+
+  /* gym: the page's one coloured block — its own currency, never points */
+  .slab{
+    display:flex; justify-content:space-between; align-items:center; width:100%;
+    background:var(--cobalt); border:none; border-radius:4px;
+    padding:16px 20px; margin-bottom:12px; color:#e8ecff;
     font:inherit; cursor:pointer; text-align:left;
   }
-  .check .led{width:6px; height:6px; border-radius:50%; background:#33312c; flex:none}
-  .check .lbl{font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase}
-  .check:active{transform:translateY(1px)}
-  .check.on{color:var(--ink); border-color:#4c4a44; background:#1d1c19}
-  .check.on .led{background:var(--led); box-shadow:0 0 6px var(--led-glow)}
-  .btn-row{display:flex; gap:10px; margin-top:14px}
-  .hw-btn{
-    flex:1; border:1px solid var(--line); border-radius:5px; background:var(--well);
-    color:var(--ink-dim); font:inherit; font-size:10px; font-weight:600;
-    padding:11px 2px 10px; text-align:center; letter-spacing:.08em; text-transform:uppercase;
-    white-space:nowrap; cursor:pointer;
+  .slab:active{transform:translateY(1px)}
+  .slab .gleft{display:flex; flex-direction:column; gap:9px}
+  .slab .t{font-size:24px; display:flex; align-items:center; gap:10px}
+  .slab .daydot{width:6px; height:6px; border-radius:50%; background:#2330b8; display:inline-block}
+  .slab .daydot.on{background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
+  .slab .leds{display:flex; align-items:center; gap:5px}
+  .slab .leds i{width:6px; height:6px; border-radius:50%; background:#2330b8; display:block}
+  .slab .leds i.on{background:#e8ecff; box-shadow:0 0 5px rgba(232,236,255,.7)}
+  .slab .leds i.extra{width:4px; height:4px; background:none; border:1px solid #4a5ae0}
+  .slab .leds i.extra.on{background:#e8ecff; border-color:#e8ecff; box-shadow:0 0 4px rgba(232,236,255,.7)}
+  .slab .gright{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+  .slab .wheels{display:flex; align-items:center; gap:6px}
+  .wheelrow{display:flex; gap:3px}
+  .wheel{height:26px; width:18px; overflow:hidden; background:var(--cobalt-well); border:1px solid var(--cobalt-deep); border-radius:3px}
+  .wheel .col{display:block; transition:transform .65s cubic-bezier(.35,1.3,.5,1)}
+  .wheel .col span{
+    display:block; height:26px; line-height:26px; font-size:14px; font-weight:700;
+    color:#e8ecff; text-align:center; font-variant-numeric:tabular-nums;
   }
-  .hw-btn:active{transform:translateY(1px)}
-  .hw-btn .led{display:block; width:5px; height:5px; border-radius:50%; background:#33312c; margin:0 auto 7px}
-  .hw-btn.on-g{color:var(--ink); border-color:#4c4a44}
-  .hw-btn.on-g .led{background:var(--led); box-shadow:0 0 5px var(--led-glow)}
-  .hw-btn.on-r{color:var(--ink); border-color:#4c4a44}
-  .hw-btn.on-r .led{background:var(--red); box-shadow:0 0 5px var(--red-glow)}
-  .hint{font-size:11.5px; color:var(--ink-dim); margin-top:13px; letter-spacing:.02em}
-  .back{
-    width:100%; margin-top:12px; padding:11px; background:none;
-    border:1px solid var(--line); border-radius:5px; color:var(--ink);
-    font:inherit; font-size:11px; font-weight:600; cursor:pointer;
-  }
+  .slab .max{font-size:10px; color:var(--cobalt-pale)}
+  .led26{width:6px; height:6px; border-radius:50%; background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
+  .led26[hidden]{display:none}
+  .slab .streak{font-size:10px; color:var(--cobalt-pale)}
 
-  /* rescue */
-  .rescue{
-    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
-    background:var(--panel); border:1px solid var(--line); border-radius:6px;
-    color:var(--ink); font:inherit; font-size:12px; font-weight:700;
-    padding:15px; margin-bottom:14px; cursor:pointer;
+  .minirow{display:flex; gap:8px; margin-top:16px}
+  .mini{
+    border:1px solid var(--hair); border-radius:4px; padding:9px 10px;
+    font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim);
+    font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace;
+    background:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+    white-space:nowrap; font-variant-numeric:tabular-nums;
   }
-  .rescue .rec{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 6px var(--red-glow)}
+  .mini:active{transform:translateY(1px)}
+  .mini.warn-on{border-color:var(--red); color:var(--red)}
+  .mini .rec{width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 5px var(--red-glow); display:block; flex:none}
 
-  /* campaign pen trace */
+  /* ---- progress & rules: printed sections, no boxes ---- */
+  .panel{background:none; border:none; padding:0; margin-bottom:30px; position:relative}
+  .p-head{display:flex; justify-content:space-between; align-items:baseline; font-size:11px; font-weight:700; margin-bottom:12px; color:var(--dim)}
+  .p-head .d{font-size:15px; color:var(--dim); font-weight:400; font-style:italic}
+
   .wave-wrap{position:relative}
   #wave{display:block; width:100%; touch-action:none}
   .scrub{
@@ -141,32 +148,31 @@
     background:var(--bg); border:1px solid var(--line); border-radius:4px;
     padding:5px 8px; font-size:9.5px; font-weight:600; color:var(--ink);
     letter-spacing:.08em; white-space:nowrap; pointer-events:none; z-index:1;
+    font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace; text-transform:uppercase;
   }
-  .cp-status{font-size:12px; color:var(--ink-dim); margin-top:10px; font-variant-numeric:tabular-nums; letter-spacing:.06em}
+  .cp-status{font-size:11px; color:var(--dim); margin-top:10px; font-variant-numeric:tabular-nums;
+    letter-spacing:.08em; text-transform:uppercase;
+    font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace}
 
-  /* stat row */
-  .stats{display:flex; gap:10px; margin-bottom:14px}
-  .stat{flex:1; background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:11px 8px; text-align:center}
-  .stat .num{font-size:18px; font-weight:700; font-variant-numeric:tabular-nums}
-  .stat .num small{font-size:10px; color:var(--ink-dim); font-weight:400}
-  .stat .lbl{font-size:9px; color:var(--ink-dim); margin-top:4px; letter-spacing:.12em; text-transform:uppercase}
-  .stat .mini{height:3px; background:var(--well); border-radius:2px; margin-top:8px; overflow:hidden}
-  .stat .mini div{height:100%; background:var(--ink); border-radius:2px}
+  .stats{display:flex; gap:10px; margin-bottom:30px}
+  .stat{flex:1; text-align:center}
+  .stat .num{font-size:22px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .num small{font-size:11px; color:var(--dim); font-weight:400}
+  .stat .lbl{font-size:9px; color:var(--dim); margin-top:4px; letter-spacing:.14em; text-transform:uppercase}
 
-  /* photos */
   .shots{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px}
-  .shot{flex:none; width:86px; background:none; border:none; padding:0; color:var(--ink-dim); font:inherit; cursor:pointer}
-  .shot img{width:86px; height:114px; object-fit:cover; border-radius:5px; border:1px solid var(--line); display:block}
+  .shot{flex:none; width:86px; background:none; border:none; padding:0; color:var(--dim); font:inherit; cursor:pointer}
+  .shot img{width:86px; height:114px; object-fit:cover; border-radius:4px; border:1px solid var(--line); display:block}
   .shot .cap{font-size:9px; margin-top:6px; text-align:center; letter-spacing:.12em; text-transform:uppercase}
-  .shot .ph{width:86px; height:114px; border:1px dashed #3a3833; border-radius:5px;
-    display:grid; place-items:center; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim)}
+  .shot .ph{width:86px; height:114px; border:1px dashed #3a372f; border-radius:4px;
+    display:grid; place-items:center; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim)}
 
-  .why{font-size:15.5px; color:var(--ink); line-height:1.75}
-  .spec dt{font-size:10px; font-weight:700; color:var(--ink-dim); margin-top:15px}
+  .why{font-size:15.5px; color:var(--ink); line-height:1.75; font-style:italic}
+  .spec dt{font-size:10px; font-weight:700; color:var(--dim); margin-top:15px}
   .spec dt:first-of-type{margin-top:0}
   .spec dd{font-size:13px; color:var(--ink); line-height:1.6; margin-top:4px}
 
-  /* overlays */
+  /* ---- overlays ---- */
   .overlay{position:fixed; inset:0; background:#000; z-index:10; display:flex; flex-direction:column}
   .overlay[hidden]{display:none}
   .overlay video,.overlay img{flex:1; min-height:0; width:100%; object-fit:contain; background:#000}
@@ -179,84 +185,92 @@
   .photo-cap{position:absolute; top:14px; left:16px; font-size:11px; font-weight:700; color:var(--ink);
     text-shadow:0 1px 4px #000}
 
-  /* tabs */
+  /* ---- tabs ---- */
   .tabs{
     position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto;
-    display:flex; background:var(--bg); border-top:1px solid var(--line);
+    display:flex; background:var(--bg); border-top:1px solid var(--hair);
     padding-bottom:env(safe-area-inset-bottom); z-index:2;
   }
   .tabs button{
-    flex:1; background:none; border:none; color:var(--ink-dim);
-    font:inherit; font-size:11px; font-weight:700; padding:15px 0 12px; cursor:pointer;
+    flex:1; background:none; border:none; color:var(--faint);
+    font:inherit; font-size:11px; font-weight:700; padding:15px 0 10px; cursor:pointer;
     letter-spacing:.14em; text-transform:uppercase;
   }
-  .tabs button::after{content:""; display:block; width:5px; height:5px; border-radius:50%; background:transparent; margin:5px auto 0}
+  .tabs button::after{content:""; display:block; width:16px; height:2px; background:transparent; margin:6px auto 0}
   .tabs button.on{color:var(--ink)}
-  .tabs button.on::after{background:var(--led); box-shadow:0 0 5px var(--led-glow)}
+  .tabs button.on::after{background:var(--ink)}
 
-  button:focus-visible,.cell:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+  button:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
 </style>
 </head>
 <body>
   <header>
     <div class="brand caps">Slopaoke</div>
-    <div class="dates serif">1 Aug – 31 Oct ’26</div>
+    <div class="serialtag mono caps"><b>N°</b> <span id="serialN">–/92</span></div>
   </header>
 
   <div id="banner"></div>
 
   <main id="viewToday">
-  <div class="panel">
+  <div class="dialzone">
     <div class="backlight" id="glowSoft"></div>
     <div class="backlight" id="glowBloom"></div>
-    <svg class="meter" id="meterSvg" viewBox="0 0 300 132" aria-hidden="true">
+    <svg class="meter" id="meterSvg" viewBox="0 0 300 126" aria-hidden="true">
+      <defs><clipPath id="dialClip"><rect x="0" y="0" width="300" height="119"/></clipPath></defs>
       <g id="meterTicks"></g>
       <g id="meterLabels"></g>
       <g id="targetG"><line x1="150" y1="33" x2="150" y2="47" stroke="#e0483e" stroke-width="2"/></g>
-      <g id="ghostG" opacity=".35"><line x1="150" y1="150" x2="150" y2="44" stroke="#e8e2d4" stroke-width="1.5"/></g>
-      <g id="needleG"><line x1="150" y1="150" x2="150" y2="40" stroke="#e8e2d4" stroke-width="2"/></g>
-      <circle cx="150" cy="150" r="26" fill="#181818" stroke="#2e2c28"/>
+      <g clip-path="url(#dialClip)">
+        <g id="trailG"></g>
+        <g id="ghostG" opacity=".32"><line x1="150" y1="150" x2="150" y2="44" stroke="#e8e2d4" stroke-width="1.5"/></g>
+        <g id="needleG"><line x1="150" y1="150" x2="150" y2="40" stroke="#e8e2d4" stroke-width="2"/></g>
+      </g>
+      <line x1="0" y1="121" x2="300" y2="121" stroke="#2b2925" stroke-width="1"/>
     </svg>
-    <div class="rule"></div>
-    <div class="lamp-row">
-      <div class="lamp caps" id="lamp"><span class="dot"></span><span id="lampLbl">—</span></div>
-      <div class="readout caps" id="readout"></div>
-    </div>
-    <div class="rule"></div>
-    <div class="gym-row">
-      <span class="gs-label caps">Gym</span>
-      <span class="gs-leds" id="gymLeds"><span class="led"></span><span class="led"></span><span class="led extra"></span></span>
-      <span class="gs-streak caps" id="gymStreak"></span>
-      <span class="odo" id="odo"><span class="wheel"><span class="col" id="odoT"></span></span><span class="wheel"><span class="col" id="odoO"></span></span></span>
-      <span class="gs-max caps">/ 26</span>
-      <span class="led26" id="led26" hidden></span>
+    <div class="statusline caps" id="lamp">
+      <span class="dot"></span><span class="lbl" id="lampLbl">—</span>
+      <span class="nums mono" id="readout"></span>
     </div>
   </div>
 
-  <div class="panel" id="dayCard">
-    <div class="day-head">
-      <div class="t caps" id="dayTag">Today</div>
+  <div class="day-head">
+    <div class="t caps" id="dayTag">Today</div>
+    <div class="day-right">
       <div class="d serif" id="dayDate">—</div>
+      <button class="yday" id="backToday" hidden>← Yesterday</button>
     </div>
-    <div id="checksWrap"></div>
-    <div class="btn-row">
-      <button class="hw-btn" id="gymPill"><span class="led"></span>Gym</button>
-      <button class="hw-btn" id="drinkPill"><span class="led"></span>Big drink</button>
-      <button class="hw-btn" id="takeawayPill"><span class="led"></span>Takeaway · <span id="twN">0</span></button>
-    </div>
-    <p class="hint" id="dayHint"></p>
-    <button class="back caps" id="backToday" hidden>Back to today</button>
   </div>
 
-  <button class="rescue caps" id="rescueBtn" hidden><span class="rec"></span>Rescue video</button>
+  <div id="checksWrap"></div>
+
+  <button class="slab" id="gymSlab">
+    <span class="gleft">
+      <span class="t serif">Gym <i class="daydot" id="gymDayDot"></i></span>
+      <span class="leds" id="gymLeds"><i></i><i></i><i class="extra"></i></span>
+    </span>
+    <span class="gright">
+      <span class="wheels">
+        <span class="wheelrow"><span class="wheel"><span class="col" id="odoT"></span></span><span class="wheel"><span class="col" id="odoO"></span></span></span>
+        <span class="max mono caps">/26</span>
+        <span class="led26" id="led26" hidden></span>
+      </span>
+      <span class="streak mono caps" id="gymStreak"></span>
+    </span>
+  </button>
+
+  <div class="minirow">
+    <button class="mini" id="drinkPill">Big drink · <span id="dkN">0</span>/2</button>
+    <button class="mini" id="takeawayPill">Takeaway · <span id="twN">0</span>/1</button>
+    <button class="mini" id="rescueBtn" hidden><span class="rec"></span>Rescue</button>
+  </div>
   </main>
 
   <main id="viewProgress" hidden>
   <div class="panel">
-    <div class="p-head"><span class="t caps">Campaign</span><span class="d serif" id="campDay"></span></div>
+    <div class="p-head"><span class="caps">Campaign</span><span class="d serif" id="campDay"></span></div>
     <div class="wave-wrap">
       <svg id="wave" viewBox="0 0 326 124" aria-label="campaign trace"></svg>
-      <div class="scrub caps" id="scrub" hidden></div>
+      <div class="scrub" id="scrub" hidden></div>
     </div>
     <p class="cp-status" id="cpStatus"></p>
   </div>
@@ -265,7 +279,6 @@
     <div class="stat">
       <div class="num" id="totalNum">0<small>/182</small></div>
       <div class="lbl">Campaign</div>
-      <div class="mini"><div id="totalMini" style="width:0%"></div></div>
     </div>
     <div class="stat">
       <div class="num" id="streakNum">0</div>
@@ -278,7 +291,6 @@
     <div class="shots" id="shots"></div>
     <input type="file" id="photoFile" accept="image/*" hidden>
   </div>
-
   </main>
 
   <main id="viewRules" hidden>
@@ -510,7 +522,7 @@ if (typeof document !== 'undefined') (function(){
     ln.setAttribute('transform','rotate('+ang+' 150 150)');
     ln.setAttribute('class','trail');
     ln.style.opacity = '.45';
-    document.getElementById('meterSvg').appendChild(ln);
+    document.getElementById('trailG').appendChild(ln);
     requestAnimationFrame(()=>{ ln.style.transition = 'opacity .6s linear'; ln.style.opacity = '0'; });
     setTimeout(()=> ln.remove(), 700);
   }
@@ -663,11 +675,11 @@ if (typeof document !== 'undefined') (function(){
       svg.appendChild(e); return e;
     };
     // chart paper: rules at 1 and 2, baseline, level figures
-    el('line',{x1:0,y1:wy(2),x2:W_W,y2:wy(2),stroke:'#23211d','stroke-width':1});
-    el('line',{x1:0,y1:wy(1),x2:W_W,y2:wy(1),stroke:'#23211d','stroke-width':1});
-    el('line',{x1:0,y1:W_BASE,x2:W_W,y2:W_BASE,stroke:'#33312c','stroke-width':1});
+    el('line',{x1:0,y1:wy(2),x2:W_W,y2:wy(2),stroke:'#211f1b','stroke-width':1});
+    el('line',{x1:0,y1:wy(1),x2:W_W,y2:wy(1),stroke:'#211f1b','stroke-width':1});
+    el('line',{x1:0,y1:W_BASE,x2:W_W,y2:W_BASE,stroke:'#33302a','stroke-width':1});
     [['2',wy(2)],['1',wy(1)]].forEach(([n,y])=>{
-      const tx = el('text',{x:0,y:y-3,fill:'#55524a','font-size':'7.5',
+      const tx = el('text',{x:0,y:y-3,fill:'#565045','font-size':'7.5',
         'font-family':'Helvetica Neue,Arial,sans-serif'});
       tx.textContent = n;
     });
@@ -675,12 +687,12 @@ if (typeof document !== 'undefined') (function(){
     L.PERIODS.forEach(P=>{
       if(L.iso(P[2]) === L.iso(L.END)) return; // finale drawn separately
       const cx = (L.dayCount(L.START,P[2]))*W_STEP;
-      el('line',{x1:cx,y1:15,x2:cx,y2:86,stroke:'#2e2c28','stroke-width':1});
+      el('line',{x1:cx,y1:15,x2:cx,y2:86,stroke:'#2b2925','stroke-width':1});
       if(t >= P[1]){
         const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
         const pp = L.rangePts(state, P[1], pEnd, t);
         const lit = pp >= Math.round(L.periodMax(P)*.6);
-        const led = el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#4ade80':'#33312c'});
+        const led = el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#e8e2d4':'#2e2c27'});
         // first sight of a fresh medal: pulse, then it's just lit
         const mkey = 'medal-'+P[0];
         if(lit && !seen[mkey] && !document.getElementById('viewProgress').hidden){
@@ -692,7 +704,7 @@ if (typeof document !== 'undefined') (function(){
     // week ticks (Mondays)
     for(let d=new Date(L.START); d<=L.END; d.setDate(d.getDate()+1))
       if(d.getDay()===1)
-        el('line',{x1:(L.dayCount(L.START,d)-1)*W_STEP,y1:88,x2:(L.dayCount(L.START,d)-1)*W_STEP,y2:91,stroke:'#33312c','stroke-width':1});
+        el('line',{x1:(L.dayCount(L.START,d)-1)*W_STEP,y1:88,x2:(L.dayCount(L.START,d)-1)*W_STEP,y2:91,stroke:'#33302a','stroke-width':1});
     // the trace: raw daily points, softened with a 1-2-1 kernel so a lone
     // missed day dips visibly but the pen doesn't slam to the floor
     const idx = dayIdxOf(t);
@@ -707,18 +719,18 @@ if (typeof document !== 'undefined') (function(){
       const d = monoPath(xs, ys);
       if(s.length > 1)
         el('path',{d: d+' L'+xs[xs.length-1].toFixed(1)+' '+W_BASE+' L'+xs[0].toFixed(1)+' '+W_BASE+' Z',
-          fill:'rgba(232,226,212,.06)', stroke:'none'});
+          fill:'rgba(232,226,212,.05)', stroke:'none'});
       el('path',{d, fill:'none', stroke:'#e8e2d4','stroke-width':1.4,
         'stroke-linejoin':'round','stroke-linecap':'round'});
-      // margin dots: gym below, drink above
+      // margin dots: gym below (cobalt — gym's colour), drink above (red)
       for(let i=0;i<=idx;i++){
         const r = L.getDay(state, L.iso(L.addDays(L.START,i)));
-        if(r.g) el('circle',{cx:wx(i),cy:96,r:1.6,fill:'#4ade80'});
+        if(r.g) el('circle',{cx:wx(i),cy:96,r:1.6,fill:'#3b4eff'});
         if(r.d) el('circle',{cx:wx(i),cy:20,r:1.6,fill:'#e0483e'});
       }
       // the pen (today)
       if(t <= L.END){
-        el('line',{x1:wx(idx),y1:15,x2:wx(idx),y2:88,stroke:'#8a857a','stroke-width':.75});
+        el('line',{x1:wx(idx),y1:15,x2:wx(idx),y2:88,stroke:'#8f8878','stroke-width':.75});
         el('circle',{cx:wx(idx),cy:ys[ys.length-1],r:2.6,fill:'#e8e2d4'});
       }
     }
@@ -726,7 +738,7 @@ if (typeof document !== 'undefined') (function(){
     el('line',{x1:W_W-0.75,y1:24,x2:W_W-0.75,y2:84,stroke:'#e0483e','stroke-width':1.5});
     // months
     [['Aug',0],['Sep',31],['Oct',61]].forEach(([mm,i])=>{
-      const tx = el('text',{x:i*W_STEP+1,y:110,fill:'#8a857a','font-size':'8.5',
+      const tx = el('text',{x:i*W_STEP+1,y:110,fill:'#8f8878','font-size':'8.5',
         'letter-spacing':'1.4','font-family':'Helvetica Neue,Arial,sans-serif'});
       tx.textContent = mm.toUpperCase();
     });
@@ -757,7 +769,7 @@ if (typeof document !== 'undefined') (function(){
   });
   waveSvg.addEventListener('pointercancel', ()=>{ scrubDay = null; scrubEl.hidden = true; });
 
-  // ---- VU meter (scale 0–20, the weekly max; T tick = this week's target) ----
+  // ---- VU meter (scale 0–20, the weekly max; red tick = weekly target) ----
   const ANG = v => -55 + 110 * Math.min(Math.max(v,0),20) / 20;
   (function buildMeter(){
     const ticks = document.getElementById('meterTicks');
@@ -776,7 +788,7 @@ if (typeof document !== 'undefined') (function(){
         const [lx,ly] = pt(128, a);
         const t = document.createElementNS('http://www.w3.org/2000/svg','text');
         t.setAttribute('x',lx); t.setAttribute('y',ly+3);
-        t.setAttribute('fill','#8a857a'); t.setAttribute('font-size','10');
+        t.setAttribute('fill','#8f8878'); t.setAttribute('font-size','10');
         t.setAttribute('text-anchor','middle');
         t.setAttribute('font-family','Helvetica Neue,Arial,sans-serif');
         t.textContent = v;
@@ -788,16 +800,18 @@ if (typeof document !== 'undefined') (function(){
   function render(){
     const t = today(), k = L.iso(selected), rec = L.getDay(state,k);
 
-    // banner
+    // serial + banner
+    document.getElementById('serialN').textContent =
+      (t < L.START ? '–' : L.dayCount(L.START, L.clamp(t))) + '/92';
     const banner = document.getElementById('banner');
     if(t < L.START){
       const n = L.dayCount(t, L.START)-1;
-      banner.innerHTML = '<div class="panel banner">Starts in '+n+' day'+(n===1?'':'s')+'.</div>';
+      banner.innerHTML = '<div class="banner">Starts in '+n+' day'+(n===1?'':'s')+'.</div>';
     } else if(t > L.END){
-      banner.innerHTML = '<div class="panel banner">Campaign finished.</div>';
+      banner.innerHTML = '<div class="banner">Campaign finished.</div>';
     } else banner.innerHTML = '';
 
-    // meter + lamp
+    // meter + status line
     const plan = L.weekPlan(state, t);
     const inCampaign = t>=L.START && t<=L.END;
     const ang = ANG(plan.earned);
@@ -831,16 +845,16 @@ if (typeof document !== 'undefined') (function(){
     document.getElementById('targetG').setAttribute('transform','rotate('+ANG(plan.target)+' 150 150)');
     const lamp = document.getElementById('lamp');
     const lbl = document.getElementById('lampLbl');
-    if(t < L.START){ lamp.className='lamp caps'; lbl.textContent='Not started'; }
-    else if(t > L.END){ lamp.className='lamp caps'; lbl.textContent='Finished'; }
+    if(t < L.START){ lamp.className='statusline caps'; lbl.textContent='Not started'; }
+    else if(t > L.END){ lamp.className='statusline caps'; lbl.textContent='Finished'; }
     else {
       const ps = L.paceStatus(state, t);
-      lamp.className = 'lamp caps ' + (ps==='behind' ? 'bad' : 'good');
+      lamp.className = 'statusline caps ' + (ps==='behind' ? 'bad' : 'good');
       lbl.textContent = ps==='hit' ? 'Target hit' : ps==='ontrack' ? 'On track' : 'Behind pace';
     }
     if(Date.now() >= bankUntil)
       document.getElementById('readout').innerHTML =
-        '<b>'+plan.earned+'</b> / '+plan.target+' this week'+(plan.pending ? ' · +'+plan.pending+' pending' : '');
+        '<b>'+plan.earned+'</b>/'+plan.target+(plan.pending ? ' · +'+plan.pending+' pending' : '');
 
     // campaign trace + current checkpoint line
     document.getElementById('campDay').textContent =
@@ -860,15 +874,15 @@ if (typeof document !== 'undefined') (function(){
       (next ? ' · '+(next[1]-ppts)+' to '+next[0] : ' · gold reached') +
       ((t>=P[1] && t<=P[2]) ? ' · '+left+' day'+(left===1?'':'s')+' left' : '');
 
-    // gym strip: week LEDs, streak, odometer + its moments
+    // gym slab: day dot, week LEDs, streak, odometer + moments
     const gw = L.weekAgg(state, L.clamp(t), t).gym;
     const gt = L.gymTotal(state);
-    const leds = document.querySelectorAll('#gymLeds .led');
-    leds[0].className = 'led' + (gw>=1 ? ' on' : '');
-    leds[1].className = 'led' + (gw>=2 ? ' on' : '');
-    // third slot: visibly lesser — surplus, never a new benchmark
-    leds[2].className = 'led extra' + (gw>=3 ? ' on' : '');
-    document.getElementById('led26').hidden = gt < 26; // permanent at 26
+    document.getElementById('gymDayDot').className = 'daydot' + (rec.g ? ' on' : '');
+    const leds = document.querySelectorAll('#gymLeds i');
+    leds[0].className = gw>=1 ? 'on' : '';
+    leds[1].className = gw>=2 ? 'on' : '';
+    leds[2].className = 'extra' + (gw>=3 ? ' on' : '');
+    document.getElementById('led26').hidden = gt < 26;
     const gsEl = document.getElementById('gymStreak');
     const gs = L.gymWeekStreak(state, t);
     gsEl.textContent = gs > 0 ? gs+' wk'+(gs===1?'':'s')+' at 2/2' : '';
@@ -878,13 +892,13 @@ if (typeof document !== 'undefined') (function(){
     }
     if(prevGymWeek !== null && prevGymWeek === 2 && gw === 3) pulseEl(leds[2]);
     if(prevGymTotal !== null && [10,20,26].some(m => prevGymTotal < m && gt >= m))
-      pulseEl(document.getElementById('odo'));
+      pulseEl(document.querySelector('.slab .wheels'));
     prevGymWeek = gw; prevGymTotal = gt;
+    document.getElementById('gymSlab').onclick = ()=> upd(k, r => r.g = r.g?0:1);
 
     // stats
     const total = t>=L.START ? L.rangePts(state, L.START, L.clamp(t), t) : 0;
     document.getElementById('totalNum').innerHTML = total+'<small>/182</small>';
-    document.getElementById('totalMini').style.width = Math.min(100, total/L.WIN*100)+'%';
     document.getElementById('streakNum').textContent = L.streak(state, t);
 
     // day editor
@@ -894,39 +908,31 @@ if (typeof document !== 'undefined') (function(){
     wrap.innerHTML = '';
     CHECKS.forEach(([key,label])=>{
       const btn = document.createElement('button');
-      btn.className = 'check' + (rec[key] ? ' on' : '');
-      btn.innerHTML = '<span class="led"></span><span class="lbl">'+label+'</span>';
+      btn.className = 'blockbtn' + (rec[key] ? ' on' : '');
+      btn.innerHTML = '<span class="t serif">'+label+'</span>' +
+        (rec[key] ? '<span class="note mono caps">+1</span>' : '');
       btn.onclick = ()=> upd(k, r => r[key] = r[key]?0:1);
       wrap.appendChild(btn);
     });
-    const gp = document.getElementById('gymPill');
-    gp.className = 'hw-btn'+(rec.g?' on-g':'');
-    gp.onclick = ()=> upd(k, r => r.g = r.g?0:1);
+    // weekly allowances live on the buttons themselves
+    const w = L.weekAgg(state, selected, t);
     const dp = document.getElementById('drinkPill');
-    dp.className = 'hw-btn'+(rec.d?' on-r':'');
+    dp.className = 'mini'+(rec.d?' warn-on':'');
+    document.getElementById('dkN').textContent = w.drinks;
     dp.onclick = ()=> upd(k, r => r.d = r.d?0:1);
     const tp = document.getElementById('takeawayPill');
-    tp.className = 'hw-btn'+((rec.t||0)>0?' on-r':'');
-    document.getElementById('twN').textContent = rec.t||0;
+    tp.className = 'mini'+((rec.t||0)>0?' warn-on':'');
+    document.getElementById('twN').textContent = w.tw;
     tp.onclick = ()=> upd(k, r => r.t = ((r.t||0)+1)%3);
-    // allowances appear only once something is reported this week
-    // (gym lives on its own strip now, not here)
-    const w = L.weekAgg(state, selected, t);
-    const spent = [];
-    if(w.drinks) spent.push(w.drinks+'/2 big drink days');
-    if(w.tw) spent.push(w.tw+'/1 takeaway'+(w.tw===1?'':'s'));
-    const hintEl = document.getElementById('dayHint');
-    hintEl.textContent = spent.length ? 'Week so far: '+spent.join(' · ')+'.' : '';
-    hintEl.style.display = spent.length ? '' : 'none';
     // one slot, two modes: quick backfill of yesterday, or return to today
     const back = document.getElementById('backToday');
     const isToday = L.iso(L.clamp(t))===k;
     const yest = L.addDays(L.clamp(t), -1);
     if(!isToday){
-      back.hidden = false; back.textContent = 'Back to today';
+      back.hidden = false; back.textContent = '← Back to today';
       back.onclick = ()=> navTo({v:'today'});
     } else if(t >= L.START && yest >= L.START){
-      back.hidden = false; back.textContent = 'Yesterday';
+      back.hidden = false; back.textContent = '← Yesterday';
       back.onclick = ()=> navTo({v:'today', sel:L.iso(yest)});
     } else back.hidden = true;
   }
