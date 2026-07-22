@@ -33,12 +33,12 @@
   .serif{font-family:Georgia,"Times New Roman",serif; letter-spacing:0; text-transform:none}
   .mono{font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace; letter-spacing:.04em}
 
-  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px}
   header .brand{font-size:14px; font-weight:700}
   .serialtag{
     background:var(--ink); color:#171512; border-radius:3px;
     padding:4px 9px; font-size:10px; font-weight:700;
-    transform:rotate(-2deg); transform-origin:center;
+    transform:rotate(-2deg); transform-origin:100% 50%; margin-right:1px;
   }
   .serialtag b{color:#c03a31; font-weight:700}
 
@@ -48,6 +48,7 @@
   .dialzone{position:relative; transition:opacity .3s ease}
   .dialzone.editing{opacity:.3}
   .meter{max-width:320px; margin:0 auto}
+  .ground{height:1px; background:#2b2925; margin-top:4px}
   .backlight{position:absolute; inset:-26px -34px -4px -34px; pointer-events:none; border-radius:40px;
     background:radial-gradient(60% 68% at 50% 40%,
       rgba(255,205,140,.17), rgba(255,205,140,.055) 48%, rgba(255,205,140,0) 68%)}
@@ -132,7 +133,7 @@
   .slab.on .max,.slab.on .streak{color:var(--cobalt-pale)}
   .slab.on .led26{background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
 
-  .minirow{display:flex; gap:8px; margin-top:12px}
+  .minirow{display:flex; gap:8px; margin-top:10px}
   .mini{
     flex:1; justify-content:center;
     border:1px solid var(--hair); border-radius:4px; padding:10px 10px;
@@ -234,7 +235,7 @@
   <div class="dialzone">
     <div class="backlight" id="glowSoft"></div>
     <div class="backlight" id="glowBloom"></div>
-    <svg class="meter" id="meterSvg" viewBox="0 0 300 126" aria-hidden="true">
+    <svg class="meter" id="meterSvg" viewBox="0 14 300 105" aria-hidden="true">
       <defs><clipPath id="dialClip"><rect x="0" y="0" width="300" height="119"/></clipPath></defs>
       <g id="meterTicks"></g>
       <g id="meterLabels"></g>
@@ -244,8 +245,8 @@
         <g id="ghostG" opacity=".32"><line x1="150" y1="150" x2="150" y2="44" stroke="#e8e2d4" stroke-width="1.5"/></g>
         <g id="needleG"><line x1="150" y1="150" x2="150" y2="40" stroke="#e8e2d4" stroke-width="2"/></g>
       </g>
-      <line x1="0" y1="121" x2="300" y2="121" stroke="#2b2925" stroke-width="1"/>
     </svg>
+    <div class="ground"></div>
     <div class="statusline caps" id="lamp">
       <span class="dot"></span><span class="lbl" id="lampLbl">—</span>
       <span class="nums mono" id="readout"></span>
