@@ -33,7 +33,7 @@
   .serif{font-family:Georgia,"Times New Roman",serif; letter-spacing:0; text-transform:none}
   .mono{font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace; letter-spacing:.04em}
 
-  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px}
+  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px}
   header .brand{font-size:14px; font-weight:700}
   .serialtag{
     background:var(--ink); color:#171512; border-radius:3px;
@@ -47,8 +47,8 @@
   /* ---- the open dial ---- */
   .dialzone{position:relative; transition:opacity .3s ease}
   .dialzone.editing{opacity:.3}
-  .meter{max-width:320px; margin:0 auto}
-  .ground{height:1px; background:#2b2925; margin-top:4px}
+  .meter{margin:0 auto}
+  .ground{height:1px; background:#2b2925; margin-top:6px}
   .backlight{position:absolute; inset:-26px -34px -4px -34px; pointer-events:none; border-radius:40px;
     background:radial-gradient(60% 68% at 50% 40%,
       rgba(255,205,140,.17), rgba(255,205,140,.055) 48%, rgba(255,205,140,0) 68%)}
@@ -63,9 +63,9 @@
   .trail{pointer-events:none}
   .statusline{
     position:relative; display:flex; justify-content:center; align-items:center;
-    gap:14px; font-size:11px; margin-top:8px;
+    gap:16px; font-size:13px; margin-top:12px;
   }
-  .statusline .dot{width:8px; height:8px; border-radius:50%; background:#33302a; flex:none}
+  .statusline .dot{width:9px; height:9px; border-radius:50%; background:#33302a; flex:none}
   .statusline.good .dot{background:var(--ink); box-shadow:0 0 8px var(--warm)}
   .statusline.bad .dot{background:var(--red); box-shadow:0 0 7px var(--red-glow)}
   .statusline .lbl{font-weight:700}
@@ -73,10 +73,10 @@
   .statusline .nums b{color:var(--ink); font-weight:700}
 
   /* ---- day section ---- */
-  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin:20px 0 2px}
+  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin:28px 0 2px}
   .day-head .t{font-size:11px; font-weight:700; color:var(--dim)}
   .day-head .d{font-size:15px; color:var(--dim); font-style:italic}
-  .yday-row{text-align:right; margin-bottom:10px; min-height:16px}
+  .yday-row{text-align:right; margin-bottom:14px; min-height:16px}
   .yday{
     display:inline-block; background:none; border:none; padding:2px 0;
     font-size:10px; color:var(--faint); cursor:pointer;
@@ -86,12 +86,12 @@
 
   .blockbtn{
     display:flex; justify-content:space-between; align-items:center; width:100%;
-    border-radius:4px; padding:14px 18px; margin-bottom:10px;
+    border-radius:4px; padding:21px 20px; margin-bottom:14px;
     font:inherit; cursor:pointer; text-align:left;
     background:none; border:1px solid var(--line); color:var(--dim);
   }
   .blockbtn:active{transform:translateY(1px)}
-  .blockbtn .t{font-size:22px}
+  .blockbtn .t{font-size:23px; line-height:1.15}
   .blockbtn .note{font-size:10px; letter-spacing:.14em; text-transform:uppercase;
     font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace}
   .blockbtn.on{background:var(--ink); border:1px solid var(--ink); color:#171512}
@@ -103,12 +103,12 @@
   .slab{
     display:flex; justify-content:space-between; align-items:center; width:100%;
     background:none; border:1px solid var(--line); border-radius:4px;
-    padding:13px 18px; margin-bottom:10px; color:var(--dim);
+    padding:14px 20px 20px; margin-bottom:14px; color:var(--dim);
     font:inherit; cursor:pointer; text-align:left;
   }
   .slab:active{transform:translateY(1px)}
-  .slab .gleft{display:flex; flex-direction:column; gap:8px}
-  .slab .t{font-size:22px}
+  .slab .gleft{display:flex; flex-direction:column; gap:9px}
+  .slab .t{font-size:23px; line-height:1.15}
   .slab .leds{display:flex; align-items:center; gap:5px; min-height:6px}
   .slab .leds i{width:6px; height:6px; border-radius:50%; background:#2a2822; display:block}
   .slab .leds i.sm{width:4px; height:4px}
@@ -133,11 +133,11 @@
   .slab.on .max,.slab.on .streak{color:var(--cobalt-pale)}
   .slab.on .led26{background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
 
-  .minirow{display:flex; gap:8px; margin-top:10px}
+  .minirow{display:flex; gap:10px; margin-top:14px}
   .mini{
     flex:1; justify-content:center;
-    border:1px solid var(--hair); border-radius:4px; padding:10px 10px;
-    font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim);
+    border:1px solid var(--hair); border-radius:4px; padding:16px 10px;
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim);
     font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace;
     background:none; cursor:pointer; display:flex; align-items:center; gap:8px;
     white-space:nowrap; font-variant-numeric:tabular-nums;
@@ -145,7 +145,7 @@
   .mini:active{transform:translateY(1px)}
   .mini.warn-on{border-color:var(--red); color:var(--red)}
   .mini .rec{width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 5px var(--red-glow); display:block; flex:none}
-  .rescuerow{margin-top:8px}
+  .rescuerow{margin-top:10px}
   .rescuerow .mini{width:100%}
 
   /* corner figure: the campaign total, pinned Tigris-style */
