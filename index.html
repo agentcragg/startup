@@ -357,6 +357,7 @@
     <img id="photoFull" alt="progress photo" draggable="false">
     <div class="overlay-bar">
       <button class="caps danger" id="photoDelete">Delete</button>
+      <button class="caps" id="photoGoal" hidden>Goal</button>
       <button class="caps" id="photoClose">Close</button>
     </div>
   </div>
@@ -1065,7 +1066,9 @@ if (typeof document !== 'undefined') (function(){
   let ordered = [], viewIdx = -1;
 
   // viewer shows one of the ordered set (goal first, then dated);
-  // swipe left/right moves through them
+  // swipe left/right moves through them. The Goal button flips any
+  // progress photo against the goal image and back — the compare gesture.
+  let compareFrom = null;
   function showPhoto(i){
     if(i < 0 || i >= ordered.length) return;
     viewIdx = i; viewing = ordered[i];
@@ -1073,8 +1076,24 @@ if (typeof document !== 'undefined') (function(){
     photoFull.src = URL.createObjectURL(viewing.blob);
     document.getElementById('photoCap').textContent =
       viewing.label + (ordered.length > 1 ? ' · '+(i+1)+'/'+ordered.length : '');
+    const goalBtn = document.getElementById('photoGoal');
+    const onGoal = viewing.key === 'goal';
+    const hasGoal = ordered.length && ordered[0].key === 'goal';
+    if(onGoal && compareFrom !== null){ goalBtn.hidden = false; goalBtn.textContent = 'Back'; }
+    else if(!onGoal && hasGoal){ goalBtn.hidden = false; goalBtn.textContent = 'Goal'; }
+    else goalBtn.hidden = true;
     photoOverlay.hidden = false;
   }
+  document.getElementById('photoGoal').onclick = ()=>{
+    if(viewing && viewing.key !== 'goal'){
+      compareFrom = viewIdx;
+      showPhoto(0);
+    } else if(compareFrom !== null){
+      const back = compareFrom;
+      compareFrom = null;
+      showPhoto(back);
+    }
+  };
   let swX = null, swY = null;
   photoOverlay.addEventListener('pointerdown', e=>{
     if(e.target === photoFull){ swX = e.clientX; swY = e.clientY; }
@@ -1083,8 +1102,10 @@ if (typeof document !== 'undefined') (function(){
     if(swX === null) return;
     const dx = e.clientX - swX, dy = e.clientY - swY;
     swX = null;
-    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy))
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){
+      compareFrom = null; // swiping breaks the compare pairing
       showPhoto(viewIdx + (dx < 0 ? 1 : -1));
+    }
   });
 
   function compress(file){
@@ -1153,7 +1174,7 @@ if (typeof document !== 'undefined') (function(){
     if(photoFull.src) URL.revokeObjectURL(photoFull.src);
     photoFull.removeAttribute('src');
     photoOverlay.hidden = true;
-    viewing = null; viewIdx = -1;
+    viewing = null; viewIdx = -1; compareFrom = null;
   }
   document.getElementById('photoClose').onclick = ()=> history.back();
   document.getElementById('photoDelete').onclick = ()=>{
