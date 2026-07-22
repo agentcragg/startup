@@ -20,19 +20,20 @@
     --warm:rgba(255,205,140,.65);
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none !important}
   body{
     background:var(--bg); color:var(--ink);
     font-family:"Helvetica Neue",-apple-system,system-ui,Arial,sans-serif;
     font-size:15px; line-height:1.4;
     max-width:520px; margin:0 auto;
-    padding:22px 18px calc(84px + env(safe-area-inset-bottom));
+    padding:16px 18px calc(76px + env(safe-area-inset-bottom));
     -webkit-font-smoothing:antialiased;
   }
   .caps{letter-spacing:.14em; text-transform:uppercase}
   .serif{font-family:Georgia,"Times New Roman",serif; letter-spacing:0; text-transform:none}
   .mono{font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace; letter-spacing:.04em}
 
-  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
+  header{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
   header .brand{font-size:14px; font-weight:700}
   .serialtag{
     background:var(--ink); color:#171512; border-radius:3px;
@@ -44,7 +45,9 @@
   .banner{font-size:12px; color:var(--dim); letter-spacing:.04em; margin-bottom:16px}
 
   /* ---- the open dial ---- */
-  .dialzone{position:relative; margin:0 -6px}
+  .dialzone{position:relative; transition:opacity .3s ease}
+  .dialzone.editing{opacity:.3}
+  .meter{max-width:320px; margin:0 auto}
   .backlight{position:absolute; inset:-26px -34px -4px -34px; pointer-events:none; border-radius:40px;
     background:radial-gradient(60% 68% at 50% 40%,
       rgba(255,205,140,.17), rgba(255,205,140,.055) 48%, rgba(255,205,140,0) 68%)}
@@ -59,7 +62,7 @@
   .trail{pointer-events:none}
   .statusline{
     position:relative; display:flex; justify-content:center; align-items:center;
-    gap:14px; font-size:11px; margin-top:10px;
+    gap:14px; font-size:11px; margin-top:8px;
   }
   .statusline .dot{width:8px; height:8px; border-radius:50%; background:#33302a; flex:none}
   .statusline.good .dot{background:var(--ink); box-shadow:0 0 8px var(--warm)}
@@ -69,15 +72,12 @@
   .statusline .nums b{color:var(--ink); font-weight:700}
 
   /* ---- day section ---- */
-  .day-head{display:flex; justify-content:space-between; align-items:flex-end; margin:30px 0 14px}
+  .day-head{display:flex; justify-content:space-between; align-items:baseline; margin:20px 0 2px}
   .day-head .t{font-size:11px; font-weight:700; color:var(--dim)}
-  .day-right{text-align:right}
-  .day-right .d{font-size:15px; color:var(--dim); font-style:italic}
+  .day-head .d{font-size:15px; color:var(--dim); font-style:italic}
+  .yday-row{text-align:right; margin-bottom:10px; min-height:16px}
   .yday{
-    display:inline-block; margin-top:4px; background:none; border:none; padding:2px 0;
-  }
-  .yday[hidden]{display:none}
-  .yday{
+    display:inline-block; background:none; border:none; padding:2px 0;
     font-size:10px; color:var(--faint); cursor:pointer;
     font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace;
     letter-spacing:.1em; text-transform:uppercase;
@@ -85,51 +85,57 @@
 
   .blockbtn{
     display:flex; justify-content:space-between; align-items:center; width:100%;
-    border-radius:4px; padding:18px 20px; margin-bottom:12px;
+    border-radius:4px; padding:14px 18px; margin-bottom:10px;
     font:inherit; cursor:pointer; text-align:left;
     background:none; border:1px solid var(--line); color:var(--dim);
   }
   .blockbtn:active{transform:translateY(1px)}
-  .blockbtn .t{font-size:24px}
+  .blockbtn .t{font-size:22px}
   .blockbtn .note{font-size:10px; letter-spacing:.14em; text-transform:uppercase;
     font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace}
   .blockbtn.on{background:var(--ink); border:1px solid var(--ink); color:#171512}
   .blockbtn.on .note{color:#c03a31}
+  .donedot{width:6px; height:6px; border-radius:50%; background:#c03a31; display:block; flex:none}
 
-  /* gym: the page's one coloured block — its own currency, never points */
+  /* gym: outline until today's session is logged, cobalt once it is.
+     The counter is always visible and always blue-lit. Never points. */
   .slab{
     display:flex; justify-content:space-between; align-items:center; width:100%;
-    background:var(--cobalt); border:none; border-radius:4px;
-    padding:16px 20px; margin-bottom:12px; color:#e8ecff;
+    background:none; border:1px solid var(--line); border-radius:4px;
+    padding:13px 18px; margin-bottom:10px; color:var(--dim);
     font:inherit; cursor:pointer; text-align:left;
   }
   .slab:active{transform:translateY(1px)}
-  .slab .gleft{display:flex; flex-direction:column; gap:9px}
-  .slab .t{font-size:24px; display:flex; align-items:center; gap:10px}
-  .slab .daydot{width:6px; height:6px; border-radius:50%; background:#2330b8; display:inline-block}
-  .slab .daydot.on{background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
-  .slab .leds{display:flex; align-items:center; gap:5px}
-  .slab .leds i{width:6px; height:6px; border-radius:50%; background:#2330b8; display:block}
-  .slab .leds i.on{background:#e8ecff; box-shadow:0 0 5px rgba(232,236,255,.7)}
-  .slab .leds i.extra{width:4px; height:4px; background:none; border:1px solid #4a5ae0}
-  .slab .leds i.extra.on{background:#e8ecff; border-color:#e8ecff; box-shadow:0 0 4px rgba(232,236,255,.7)}
-  .slab .gright{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+  .slab .gleft{display:flex; flex-direction:column; gap:8px}
+  .slab .t{font-size:22px}
+  .slab .leds{display:flex; align-items:center; gap:5px; min-height:6px}
+  .slab .leds i{width:6px; height:6px; border-radius:50%; background:#2a2822; display:block}
+  .slab .leds i.sm{width:4px; height:4px}
+  .slab .leds i.on{background:var(--cobalt); box-shadow:0 0 5px rgba(70,95,255,.55)}
+  .slab .gright{display:flex; flex-direction:column; align-items:flex-end; gap:5px}
   .slab .wheels{display:flex; align-items:center; gap:6px}
   .wheelrow{display:flex; gap:3px}
-  .wheel{height:26px; width:18px; overflow:hidden; background:var(--cobalt-well); border:1px solid var(--cobalt-deep); border-radius:3px}
+  .wheel{height:24px; width:17px; overflow:hidden; background:var(--cobalt-well); border:1px solid #23295e; border-radius:3px}
   .wheel .col{display:block; transition:transform .65s cubic-bezier(.35,1.3,.5,1)}
   .wheel .col span{
-    display:block; height:26px; line-height:26px; font-size:14px; font-weight:700;
-    color:#e8ecff; text-align:center; font-variant-numeric:tabular-nums;
+    display:block; height:24px; line-height:24px; font-size:13px; font-weight:700;
+    color:#8b97ff; text-align:center; font-variant-numeric:tabular-nums;
   }
-  .slab .max{font-size:10px; color:var(--cobalt-pale)}
-  .led26{width:6px; height:6px; border-radius:50%; background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
-  .led26[hidden]{display:none}
-  .slab .streak{font-size:10px; color:var(--cobalt-pale)}
+  .slab .max{font-size:10px; color:var(--faint)}
+  .slab .streak{font-size:10px; color:var(--faint); display:block; min-height:13px}
+  .led26{width:6px; height:6px; border-radius:50%; background:var(--cobalt); box-shadow:0 0 6px rgba(70,95,255,.6)}
+  .slab.on{background:var(--cobalt); border-color:var(--cobalt); color:#e8ecff}
+  .slab.on .leds i{background:#2330b8; box-shadow:none}
+  .slab.on .leds i.on{background:#e8ecff; box-shadow:0 0 5px rgba(232,236,255,.7)}
+  .slab.on .wheel{border-color:#2330b8}
+  .slab.on .wheel .col span{color:#e8ecff}
+  .slab.on .max,.slab.on .streak{color:var(--cobalt-pale)}
+  .slab.on .led26{background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8)}
 
-  .minirow{display:flex; gap:8px; margin-top:16px}
+  .minirow{display:flex; gap:8px; margin-top:12px}
   .mini{
-    border:1px solid var(--hair); border-radius:4px; padding:9px 10px;
+    flex:1; justify-content:center;
+    border:1px solid var(--hair); border-radius:4px; padding:10px 10px;
     font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim);
     font-family:ui-monospace,"SF Mono","Roboto Mono",Menlo,monospace;
     background:none; cursor:pointer; display:flex; align-items:center; gap:8px;
@@ -138,6 +144,15 @@
   .mini:active{transform:translateY(1px)}
   .mini.warn-on{border-color:var(--red); color:var(--red)}
   .mini .rec{width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 5px var(--red-glow); display:block; flex:none}
+  .rescuerow{margin-top:8px}
+  .rescuerow .mini{width:100%}
+
+  /* corner figure: the campaign total, pinned Tigris-style */
+  .corner{
+    position:fixed; right:18px; bottom:calc(66px + env(safe-area-inset-bottom));
+    font-size:10px; color:var(--faint); z-index:1; letter-spacing:.08em;
+    font-variant-numeric:tabular-nums;
+  }
 
   /* ---- progress & rules: printed sections, no boxes ---- */
   .panel{background:none; border:none; padding:0; margin-bottom:30px; position:relative}
@@ -179,6 +194,7 @@
   .overlay{position:fixed; inset:0; background:#000; z-index:10; display:flex; flex-direction:column}
   .overlay[hidden]{display:none}
   .overlay video,.overlay img{flex:1; min-height:0; width:100%; object-fit:contain; background:#000}
+  .overlay img{touch-action:none; -webkit-user-drag:none; user-select:none}
   .overlay-bar{display:flex; background:#000; border-top:1px solid var(--line)}
   .overlay-bar button{
     flex:1; padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom));
@@ -238,18 +254,18 @@
 
   <div class="day-head">
     <div class="t caps" id="dayTag">Today</div>
-    <div class="day-right">
-      <div class="d serif" id="dayDate">—</div>
-      <button class="yday" id="backToday" hidden>← Yesterday</button>
-    </div>
+    <div class="d serif" id="dayDate">—</div>
+  </div>
+  <div class="yday-row">
+    <button class="yday" id="backToday" hidden>← Yesterday</button>
   </div>
 
   <div id="checksWrap"></div>
 
   <button class="slab" id="gymSlab">
     <span class="gleft">
-      <span class="t serif">Gym <i class="daydot" id="gymDayDot"></i></span>
-      <span class="leds" id="gymLeds"><i></i><i></i><i class="extra"></i></span>
+      <span class="t serif">Gym</span>
+      <span class="leds" id="gymLeds"></span>
     </span>
     <span class="gright">
       <span class="wheels">
@@ -264,8 +280,12 @@
   <div class="minirow">
     <button class="mini" id="drinkPill">Big drink · <span id="dkN">0</span>/2</button>
     <button class="mini" id="takeawayPill">Takeaway · <span id="twN">0</span>/1</button>
+  </div>
+  <div class="rescuerow">
     <button class="mini" id="rescueBtn" hidden><span class="rec"></span>Rescue</button>
   </div>
+
+  <div class="corner mono caps" id="cornerTotal" hidden></div>
   </main>
 
   <main id="viewProgress" hidden>
@@ -330,7 +350,7 @@
 
   <div class="overlay" id="photoOverlay" hidden>
     <div class="photo-cap caps" id="photoCap"></div>
-    <img id="photoFull" alt="progress photo">
+    <img id="photoFull" alt="progress photo" draggable="false">
     <div class="overlay-bar">
       <button class="caps danger" id="photoDelete">Delete</button>
       <button class="caps" id="photoClose">Close</button>
@@ -499,6 +519,7 @@ if (typeof document !== 'undefined') (function(){
   // Power-on flourish: needle sweeps full scale, then settles on the value.
   let sweeping = false, prevNeed = null, bankUntil = 0;
   let prevGymWeek = null, prevGymTotal = null;
+  let justKey = null, justAt = 0;
   function sweepNeedle(toAngle){
     if(sweeping) return;
     sweeping = true;
@@ -598,7 +619,7 @@ if (typeof document !== 'undefined') (function(){
   });
 
   // ---- Gym odometer: mechanical digit wheels, rolls on every session. ----
-  const WHEEL_H = 26;
+  const WHEEL_H = 24;
   ['odoT','odoO'].forEach(id=>{
     const col = document.getElementById(id);
     for(let i=0;i<=10;i++){ // 0-9 plus a spare 0 for the 9->0 wrap
@@ -695,12 +716,16 @@ if (typeof document !== 'undefined') (function(){
         const pEnd = L.clamp(t) < P[2] ? L.clamp(t) : P[2];
         const pp = L.rangePts(state, P[1], pEnd, t);
         const lit = pp >= Math.round(L.periodMax(P)*.6);
-        const led = el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#e8e2d4':'#2e2c27'});
-        // first sight of a fresh medal: pulse, then it's just lit
-        const mkey = 'medal-'+P[0];
-        if(lit && !seen[mkey] && !document.getElementById('viewProgress').hidden){
-          led.setAttribute('class','ledpulse');
-          markSeen(mkey);
+        // a dot only once earned, or once the checkpoint has ended
+        // (a grey dot on an ended checkpoint is a miss — that means something;
+        // a grey dot on a future one is just noise)
+        if(lit || t > P[2]){
+          const led = el('circle',{cx:cx,cy:9,r:2.2,fill:lit?'#e8e2d4':'#2e2c27'});
+          const mkey = 'medal-'+P[0];
+          if(lit && !seen[mkey] && !document.getElementById('viewProgress').hidden){
+            led.setAttribute('class','ledpulse');
+            markSeen(mkey);
+          }
         }
       }
     });
@@ -877,23 +902,31 @@ if (typeof document !== 'undefined') (function(){
       (next ? ' · '+(next[1]-ppts)+' to '+next[0] : ' · gold reached') +
       ((t>=P[1] && t<=P[2]) ? ' · '+left+' day'+(left===1?'':'s')+' left' : '');
 
-    // gym slab: day dot, week LEDs, streak, odometer + moments
+    // gym slab: outline until the edited day has a session, cobalt once it
+    // does. Week dots below the word — two fixed slots, extra sessions add
+    // small dots quietly (capped at 5, never advertised).
     const gw = L.weekAgg(state, L.clamp(t), t).gym;
     const gt = L.gymTotal(state);
-    document.getElementById('gymDayDot').className = 'daydot' + (rec.g ? ' on' : '');
-    const leds = document.querySelectorAll('#gymLeds i');
-    leds[0].className = gw>=1 ? 'on' : '';
-    leds[1].className = gw>=2 ? 'on' : '';
-    leds[2].className = 'extra' + (gw>=3 ? ' on' : '');
+    document.getElementById('gymSlab').className = 'slab' + (rec.g ? ' on' : '');
+    const ledsWrap = document.getElementById('gymLeds');
+    ledsWrap.innerHTML = '';
+    const slots = Math.max(2, Math.min(gw, 5));
+    const dots = [];
+    for(let i=0; i<slots; i++){
+      const s = document.createElement('i');
+      if(i>=2) s.className = 'sm';
+      if(i<gw) s.classList.add('on');
+      ledsWrap.appendChild(s); dots.push(s);
+    }
     document.getElementById('led26').hidden = gt < 26;
     const gsEl = document.getElementById('gymStreak');
     const gs = L.gymWeekStreak(state, t);
     gsEl.textContent = gs > 0 ? gs+' wk'+(gs===1?'':'s')+' at 2/2' : '';
     setOdo(gt);
     if(prevGymWeek !== null && prevGymWeek < 2 && gw === 2){
-      pulseEl(leds[0]); pulseEl(leds[1]); pulseEl(gsEl);
+      pulseEl(dots[0]); pulseEl(dots[1]); pulseEl(gsEl);
     }
-    if(prevGymWeek !== null && prevGymWeek === 2 && gw === 3) pulseEl(leds[2]);
+    if(prevGymWeek !== null && gw === prevGymWeek+1 && gw >= 3 && dots[gw-1]) pulseEl(dots[gw-1]);
     if(prevGymTotal !== null && [10,20,26].some(m => prevGymTotal < m && gt >= m))
       pulseEl(document.querySelector('.slab .wheels'));
     prevGymWeek = gw; prevGymTotal = gt;
@@ -904,17 +937,29 @@ if (typeof document !== 'undefined') (function(){
     document.getElementById('totalNum').innerHTML = total+'<small>/182</small>';
     document.getElementById('streakNum').textContent = L.streak(state, t);
 
-    // day editor
-    document.getElementById('dayTag').textContent = L.iso(t)===k ? 'Today' : 'Editing';
+    // day editor (dial dims during archaeology — it shows the current week
+    // regardless of which day is being edited)
+    const editingPast = L.iso(t)!==k;
+    document.querySelector('.dialzone').className = 'dialzone' + (editingPast ? ' editing' : '');
+    document.getElementById('dayTag').textContent = editingPast ? 'Editing' : 'Today';
     document.getElementById('dayDate').textContent = fmtLong(selected);
+    // corner figure: campaign total, only on the front page
+    const corner = document.getElementById('cornerTotal');
+    corner.textContent = total+'/182';
+    corner.hidden = curView !== 'today';
     const wrap = document.getElementById('checksWrap');
     wrap.innerHTML = '';
     CHECKS.forEach(([key,label])=>{
       const btn = document.createElement('button');
       btn.className = 'blockbtn' + (rec[key] ? ' on' : '');
+      // the +1 is the moment; it settles into a quiet red stitch-dot
+      const fresh = rec[key] && justKey === k+key && performance.now()-justAt < 1900;
       btn.innerHTML = '<span class="t serif">'+label+'</span>' +
-        (rec[key] ? '<span class="note mono caps">+1</span>' : '');
-      btn.onclick = ()=> upd(k, r => r[key] = r[key]?0:1);
+        (rec[key] ? (fresh ? '<span class="note mono caps">+1</span>' : '<span class="donedot"></span>') : '');
+      btn.onclick = ()=>{
+        if(!rec[key]){ justKey = k+key; justAt = performance.now(); setTimeout(render, 2000); }
+        upd(k, r => r[key] = r[key]?0:1);
+      };
       wrap.appendChild(btn);
     });
     // weekly allowances live on the buttons themselves
@@ -998,6 +1043,30 @@ if (typeof document !== 'undefined') (function(){
   const photoOverlay = document.getElementById('photoOverlay');
   const photoFull = document.getElementById('photoFull');
   let photos = [], shotUrls = [], pendingSlot = null, viewing = null;
+  let ordered = [], viewIdx = -1;
+
+  // viewer shows one of the ordered set (goal first, then dated);
+  // swipe left/right moves through them
+  function showPhoto(i){
+    if(i < 0 || i >= ordered.length) return;
+    viewIdx = i; viewing = ordered[i];
+    if(photoFull.src) URL.revokeObjectURL(photoFull.src);
+    photoFull.src = URL.createObjectURL(viewing.blob);
+    document.getElementById('photoCap').textContent =
+      viewing.label + (ordered.length > 1 ? ' · '+(i+1)+'/'+ordered.length : '');
+    photoOverlay.hidden = false;
+  }
+  let swX = null, swY = null;
+  photoOverlay.addEventListener('pointerdown', e=>{
+    if(e.target === photoFull){ swX = e.clientX; swY = e.clientY; }
+  });
+  photoOverlay.addEventListener('pointerup', e=>{
+    if(swX === null) return;
+    const dx = e.clientX - swX, dy = e.clientY - swY;
+    swX = null;
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy))
+      showPhoto(viewIdx + (dx < 0 ? 1 : -1));
+  });
 
   function compress(file){
     return new Promise((res, rej)=>{
@@ -1024,10 +1093,7 @@ if (typeof document !== 'undefined') (function(){
       b.querySelector('img').src = u;
       b.onclick = ()=>{
         history.pushState(Object.assign(uiState(), {ov:'photo'}), '');
-        viewing = p;
-        document.getElementById('photoCap').textContent = p.label;
-        photoFull.src = URL.createObjectURL(p.blob);
-        photoOverlay.hidden = false;
+        showPhoto(ordered.indexOf(p));
       };
     } else {
       b.innerHTML = '<div class="ph">'+emptyLabel+'</div>';
@@ -1040,9 +1106,10 @@ if (typeof document !== 'undefined') (function(){
     shotUrls.forEach(URL.revokeObjectURL); shotUrls = [];
     shotsEl.innerHTML = '';
     const goal = photos.find(p => p.key==='goal');
+    const dated = photos.filter(p => p.key!=='goal').sort((a,b)=> a.ts-b.ts);
+    ordered = (goal ? [goal] : []).concat(dated);
     shotsEl.appendChild(mkShot(goal, 'Goal', ()=>{ pendingSlot='goal'; photoFile.click(); }));
-    photos.filter(p => p.key!=='goal').sort((a,b)=> a.ts-b.ts)
-      .forEach(p => shotsEl.appendChild(mkShot(p)));
+    dated.forEach(p => shotsEl.appendChild(mkShot(p)));
     shotsEl.appendChild(mkShot(null, '+ Add', ()=>{ pendingSlot='dated'; photoFile.click(); }));
   }
 
@@ -1067,7 +1134,7 @@ if (typeof document !== 'undefined') (function(){
     if(photoFull.src) URL.revokeObjectURL(photoFull.src);
     photoFull.removeAttribute('src');
     photoOverlay.hidden = true;
-    viewing = null;
+    viewing = null; viewIdx = -1;
   }
   document.getElementById('photoClose').onclick = ()=> history.back();
   document.getElementById('photoDelete').onclick = ()=>{

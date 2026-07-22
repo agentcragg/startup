@@ -103,20 +103,26 @@ explicit requirement). The >30-min staleness snap does replaceState.
   baseline) with the centred status line beneath (lamp dot + word +
   mono digits). Backlight glow = light pooling on the page (no box),
   blooms on target-hit celebration, holds while target held, spent by
-  Monday banking. Then the day section: two **big serif block buttons**
-  (Logged food / Protein — solid cream fill + red mono "+1" when on,
-  thin outline when off), the **cobalt gym slab** (serif "Gym" at the
-  same 24px + day-dot for the edited day; week LEDs + lesser third dot
-  below; odometer wheels + /26 + 26-lamp and streak at right; pressing
-  the slab logs the session — sessions never points), then mini mono
-  buttons: "Big drink · n/2", "Takeaway · n/1" (weekly budgets live ON
-  the buttons; the old budget note line is gone), "● Rescue".
-  "← Yesterday" sits under the serif date in the day header. Gym
-  moments unchanged (2/2 pulse, 3rd-dot pulse, wheel pulses at
-  10/20/26).
-  The per-day points digit was dropped (redundancy — the needle is the
-  feedback). The budget line covers drinks/takeaways only — gym left it
-  for the strip.
+  Monday banking. The dial DIMS (opacity .3) while editing a past day —
+  it shows the current week regardless, and the dimming doubles as the
+  editing-mode cue. Then the day section: TODAY + serif date share one
+  baseline, "← Yesterday"/"← Back to today" right-aligned beneath; two
+  **big serif block buttons** (Logged food / Protein — cream fill when
+  on; a red mono "+1" flashes on the press then settles to a small red
+  stitch-dot), the **gym slab** (outline until the EDITED day has a
+  session, cobalt fill once it does — day-state is the slab's colour;
+  counter always visible and always blue-lit; week dots under the serif
+  "Gym": two fixed slots, extra sessions quietly add small dots up to 5,
+  capacity never advertised; odometer + /26 + 26-lamp + streak at right,
+  streak line height reserved so nothing jumps; pressing the slab logs
+  the session — sessions never points), then "Big drink · n/2" and
+  "Takeaway · n/1" half-width on one row (weekly budgets live ON the
+  buttons) and "● Rescue" full-width beneath. Campaign total sits fixed
+  in the bottom-right corner (Today view only). Everything above the
+  tab bar fits a 740px Android viewport. Gym moments unchanged (2/2
+  pulse, extra-dot pulse, wheel pulses at 10/20/26). Global CSS
+  `[hidden]{display:none !important}` guards the display-beats-hidden
+  bug class. The per-day points digit stays dropped.
 - **Progress**: the **campaign pen trace**
   (replaced both the checkpoint bar card AND the calendar grid, 18 Jul
   2026): one monotone-cubic cream ink line over 92 days of ruled chart
@@ -124,8 +130,11 @@ explicit requirement). The >30-min staleness snap does replaceState.
   dips without slamming to the floor; margin dots (gym = cobalt, drink =
   red); checkpoint hairlines with medal dots (lit cream at ≥bronze); pen
   dot + hairline = today; red tick = finale; one-line current-checkpoint
-  status underneath (mono caps). Then unboxed stats figures (Campaign /
-  Log streak) and photos. Everything printed on the page, no cards.
+  status underneath (mono caps). Medal dots appear only once earned or
+  once their checkpoint has ended (a grey dot on an ended checkpoint is
+  a miss; on a future one it would be noise). Then unboxed stats figures
+  (Campaign / Log streak) and photos. Everything printed on the page,
+  no cards.
 - **Rules** (own tab, 19 Jul 2026 — was briefly a link under Progress):
   the user's why-statement, then the spec sheet.
 - Redundancy trims (18 Jul 2026): "This week" panel deleted (the meter
@@ -140,7 +149,9 @@ explicit requirement). The >30-min staleness snap does replaceState.
 
 Goal photo + monthly mirror shots live in IndexedDB (`slopaoke-photos`)
 on the phone, added via file input from the camera roll, compressed to
-≤1280px JPEG. The repo/site are public, so photos must never be
+≤1280px JPEG. Viewer supports swipe left/right through the set (goal
+first, then dated; caption shows n/total; img draggable=false or native
+image-drag eats the pointer events). The repo/site are public, so photos must never be
 committed or uploaded anywhere. No sync: clearing site data loses them
 (originals remain in camera roll). Goal slot is fixed; dated photos
 append; viewer overlay has delete.
