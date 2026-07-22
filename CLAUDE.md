@@ -191,8 +191,14 @@ copy.
   branch route.)
 - Offline PWA: sw.js caches the shell (stale-while-revalidate, so a deploy
   appears on the *second* visit after it). manifest.json + icon-*.png give
-  the home-screen install its name/icon. If sw.js's asset list changes,
-  bump the CACHE version in sw.js.
+  the home-screen install its name/icon. If sw.js's asset list changes OR
+  a precached asset's content changes (e.g. icons), bump the CACHE version
+  in sw.js. Icons (22 Jul 2026): the dial glyph — cream needle + red
+  target tick on #121110, full-bleed, declared `purpose: any maskable`
+  with content inside the r=0.4 safe zone so Pixel's circular mask crops
+  cleanly. Generated programmatically; changing the icon means the user
+  re-adds the app to the home screen (or waits for Chrome's WebAPK
+  refresh).
 
 ## Testing
 
