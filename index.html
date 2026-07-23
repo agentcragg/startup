@@ -524,7 +524,6 @@ if (typeof document !== 'undefined') (function(){
   // Power-on flourish: needle sweeps full scale, then settles on the value.
   let sweeping = false, prevNeed = null, bankUntil = 0;
   let prevGymWeek = null, prevGymTotal = null;
-  let justKey = null, justAt = 0;
   function sweepNeedle(toAngle){
     if(sweeping) return;
     sweeping = true;
@@ -972,14 +971,9 @@ if (typeof document !== 'undefined') (function(){
     CHECKS.forEach(([key,label])=>{
       const btn = document.createElement('button');
       btn.className = 'blockbtn' + (rec[key] ? ' on' : '');
-      // the +1 is the moment; it settles into a quiet red stitch-dot
-      const fresh = rec[key] && justKey === k+key && performance.now()-justAt < 1900;
       btn.innerHTML = '<span class="t serif">'+label+'</span>' +
-        (rec[key] ? (fresh ? '<span class="note mono caps">+1</span>' : '<span class="donedot"></span>') : '');
-      btn.onclick = ()=>{
-        if(!rec[key]){ justKey = k+key; justAt = performance.now(); setTimeout(render, 2000); }
-        upd(k, r => r[key] = r[key]?0:1);
-      };
+        (rec[key] ? '<span class="donedot"></span>' : '');
+      btn.onclick = ()=> upd(k, r => r[key] = r[key]?0:1);
       wrap.appendChild(btn);
     });
     // weekly allowances live on the buttons themselves
