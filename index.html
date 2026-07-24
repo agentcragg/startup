@@ -348,6 +348,7 @@
 
   <div class="overlay" id="videoOverlay" hidden>
     <video id="rescueVid" playsinline preload="none"></video>
+    <img id="rescueImg" alt="" draggable="false" hidden>
     <div class="overlay-bar"><button class="caps" id="videoClose">Close</button></div>
   </div>
 
@@ -998,23 +999,44 @@ if (typeof document !== 'undefined') (function(){
     } else back.hidden = true;
   }
 
-  // ---- Rescue videos: play inside the app, never link out. Add clips by
-  // dropping an mp4 in videos/ and listing it here; picks at random. ----
-  // Pages caches files for 10 min — changed clip = new URL (bump ?v).
-  const VIDEOS = ['videos/rescue-01.mp4?v=2'];
+  // ---- Rescue media: play/show inside the app, never link out. Add clips
+  // to videos/ + VIDEOS, or stills to images/ + IMAGES; one random pool. ----
+  // Pages caches files for 10 min — changed content needs a new URL (bump ?v).
+  const VIDEOS = [
+    'videos/rescue-01.mp4?v=2','videos/rescue-02.mp4','videos/rescue-03.mp4',
+    'videos/rescue-04.mp4','videos/rescue-05.mp4','videos/rescue-06.mp4',
+    'videos/rescue-07.mp4','videos/rescue-08.mp4','videos/rescue-09.mp4',
+    'videos/rescue-10.mp4','videos/rescue-11.mp4'
+  ];
+  const IMAGES = ['images/rescue-01.jpg'];
+  const IMAGE_MS = 5000; // stills hold this long, then auto-close
   const overlay = document.getElementById('videoOverlay');
   const vid = document.getElementById('rescueVid');
+  const img = document.getElementById('rescueImg');
   const rescueBtn = document.getElementById('rescueBtn');
-  rescueBtn.hidden = VIDEOS.length===0;
+  const POOL = VIDEOS.map(src=>({type:'video',src})).concat(IMAGES.map(src=>({type:'image',src})));
+  rescueBtn.hidden = POOL.length===0;
+  let imgTimer = null;
   rescueBtn.onclick = ()=>{
     history.pushState(Object.assign(uiState(), {ov:'video'}), '');
-    vid.src = VIDEOS[Math.floor(Math.random()*VIDEOS.length)];
+    const pick = POOL[Math.floor(Math.random()*POOL.length)];
+    if(pick.type==='video'){
+      img.hidden = true; vid.hidden = false;
+      vid.src = pick.src;
+      vid.play().catch(()=>{});
+    } else {
+      vid.hidden = true; img.hidden = false;
+      img.src = pick.src;
+      clearTimeout(imgTimer);
+      imgTimer = setTimeout(()=>{ if(!overlay.hidden) history.back(); }, IMAGE_MS);
+    }
     overlay.hidden = false;
-    vid.play().catch(()=>{});
   };
   function closeVideoRaw(){
     if(overlay.hidden) return;
+    clearTimeout(imgTimer);
     vid.pause(); vid.removeAttribute('src'); vid.load();
+    img.removeAttribute('src');
     overlay.hidden = true;
   }
   document.getElementById('videoClose').onclick = ()=> history.back();
